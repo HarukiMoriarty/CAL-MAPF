@@ -136,7 +136,10 @@ Vertex* Cache::try_cache_cargo(Vertex* cargo) {
     return cargo;
 }
 
-Vertex* Cache::try_insert_cache(Vertex* cargo, Vertex* unloading_port) {
+Vertex* Cache::try_insert_cache(Vertex* cargo, std::vector<Vertex*> port_list) {
+    // Calculate closet port
+    Vertex* unloading_port = cargo->find_closest_port(port_list);
+
     // First, if cargo has already cached or is coming on the way, we directly go
     // to unloading port
     if (_get_cargo_in_cache_index(cargo) != -1 || _is_cargo_in_coming_cache(cargo)) return unloading_port;

@@ -56,6 +56,7 @@ bool is_expired(const Deadline* deadline);
 float get_random_float(std::mt19937* MT, float from = 0, float to = 1);
 int get_random_int(std::mt19937* MT, int from, int to);
 
+// Vertex
 struct Vertex {
   const int id;         // index for V in Graph
   const int index;      // index for U (width * y + x) in Graph
@@ -66,7 +67,7 @@ struct Vertex {
   Vertex(int _id, int _index, int _width);
 
   bool operator==(const Vertex& other) const {
-    return id == other.id && index == other.index;
+    return id == other.id && index == other.index && width == other.width;
   }
 
   // Reload << operator
@@ -75,6 +76,26 @@ struct Vertex {
     int y = v.index / v.width;
     os << "(" << x << ", " << y << ")";
     return os;
+  }
+
+  Vertex* find_closest_port(std::vector<Vertex*> port_list) {
+    // We use hanmington distance here
+    int x = index % width;
+    int y = index / width;
+    int min_dist = INT_MAX;
+    Vertex* min_port = nullptr;
+
+    for (uint i = 0; i < port_list.size(); i++) {
+      int port_x = port_list[i]->index % port_list[i]->width;
+      int port_y = port_list[i]->index / port_list[i]->width;
+
+      int dist = std::abs(port_x - x) + std::abs(port_y - y);
+      if (dist < min_dist) {
+        min_dist = dist;
+        min_port = port_list[i];
+      }
+    }
+    return min_port;
   }
 };
 

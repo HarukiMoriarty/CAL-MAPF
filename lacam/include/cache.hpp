@@ -79,12 +79,12 @@ struct Cache {
      * @brief Find a cache block for cargo that is not cached (cache-miss) and set goals.
      *        This is triggered when a cargo cache miss occurs.
      * @param cargo A pointer to the Vertex representing the cargo.
-     * @param unloading_port A pointer to the Vertex representing the unloading port.
+     * @param port_list A pointer to the vector of Vertex representing the unloading ports.
      * @return A pointer to the Vertex representing the cache block, or
      *         the unloading port Vertex if a suitable block cannot be found or
      *         if the cargo is already cached (in a multi-agent context).
      */
-    Vertex* try_insert_cache(Vertex* cargo, Vertex* unloading_port);
+    Vertex* try_insert_cache(Vertex* cargo, std::vector<Vertex*> port_list);
 
     /**
      * @brief Insert cargo into cache. This occurs when an agent brings a

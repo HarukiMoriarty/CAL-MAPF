@@ -33,7 +33,9 @@ TEST(Cache, cache_LRU_test)
     Vertex* cargo_5 = new Vertex(50, 32, 9);
     // Vertex* cargo_6 = new Vertex(51, 33, 9);
 
+    Config port_list;
     Vertex* unloading_port = new Vertex(37, 21, 9);
+    port_list.push_back(unloading_port);
 
     cache.node_cargo.push_back(cargo_1);
     cache.node_cargo.push_back(cargo_2);
@@ -81,10 +83,10 @@ TEST(Cache, cache_LRU_test)
 
     // Test `try_insert_cache(Vertex* cargo)`
     // We will insert lock block cache_3 with cargo_5
-    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_1, unloading_port));
-    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_4, unloading_port));
+    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_1, port_list));
+    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_4, port_list));
     ASSERT_EQ(2, cache._get_cache_evited_policy_index());
-    ASSERT_EQ(cache_3, cache.try_insert_cache(cargo_5, unloading_port));
+    ASSERT_EQ(cache_3, cache.try_insert_cache(cargo_5, port_list));
     ASSERT_EQ(cargo_5, cache.node_coming_cargo[2]);
 
     // Test `update_cargo_into_cache`
@@ -128,7 +130,10 @@ TEST(Cache, cache_FIFO_test)
     Vertex* cargo_5 = new Vertex(50, 32, 9);
     // Vertex* cargo_6 = new Vertex(51, 33, 9);
 
+    Config port_list;
     Vertex* unloading_port = new Vertex(37, 21, 9);
+    port_list.push_back(unloading_port);
+
 
     cache.node_cargo.push_back(cargo_1);
     cache.node_cargo.push_back(cargo_2);
@@ -176,10 +181,10 @@ TEST(Cache, cache_FIFO_test)
 
     // Test `try_insert_cache(Vertex* cargo)`
     // We will insert lock block cache_3 with cargo_5
-    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_1, unloading_port));
-    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_4, unloading_port));
+    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_1, port_list));
+    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_4, port_list));
     ASSERT_EQ(2, cache._get_cache_evited_policy_index());
-    ASSERT_EQ(cache_3, cache.try_insert_cache(cargo_5, unloading_port));
+    ASSERT_EQ(cache_3, cache.try_insert_cache(cargo_5, port_list));
     ASSERT_EQ(cargo_5, cache.node_coming_cargo[2]);
 
     // Test `update_cargo_into_cache`

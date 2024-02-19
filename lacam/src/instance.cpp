@@ -99,7 +99,7 @@ uint Instance::update_on_reaching_goals_with_cache(
       }
 
       // Update goals and steps
-      goals[j] = graph.unloading_ports[0];
+      goals[j] = cargo_goals[j]->find_closest_port(graph.unloading_ports);
     }
   }
 
@@ -109,10 +109,10 @@ uint Instance::update_on_reaching_goals_with_cache(
       // Status 0 finished.
       if (vertex_list[step][j] == goals[j]) {
         // Agent has moved to warehouse cargo target
-        Vertex* goal = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports[0]);
+        Vertex* goal = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports);
         // Cache is full, directly get back to unloading port.
         // ==> Status 3
-        if (goal == graph.unloading_ports[0]) {
+        if (is_port(goal)) {
           logger->debug(
             "Agent {} status 0 -> status 3, reach warehouse cargo {}, cache "
             "is full, go back to unloading port",
@@ -198,9 +198,9 @@ uint Instance::update_on_reaching_goals_with_cache(
       // Agent has yet not back to unloading port, we check if there is an empty
       // cache block to insert
       else {
-        Vertex* goal = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports[0]);
+        Vertex* goal = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports);
         // Check if the cache is available during the period
-        if (goal != graph.unloading_ports[0]) {
+        if (!is_port(goal)) {
           logger->debug(
             "Agent {} status 3 -> status 2, find cache block to insert during the moving, go to cache block {}",
             j, *cargo_goals[j], *goal);
@@ -278,7 +278,7 @@ uint Instance::update_on_reaching_goals_without_cache(
     // Update steps
     cargo_cnts[j] += step;
     if (vertex_list[step][j] == goals[j]) {
-      if (goals[j] == graph.unloading_ports[0]) {
+      if (is_port(goals[j])) {
         if (remain_goals > 0) {
           // Update statistics.
           // Otherwise we still let agent go to fetch new cargo, but we do
@@ -289,10 +289,12 @@ uint Instance::update_on_reaching_goals_without_cache(
           cargo_steps.push_back(cargo_cnts[j]);
           cargo_cnts[j] = 0;
         }
-        goals[j] = graph.get_next_goal();
+        Vertex* cargo = graph.get_next_goal();
+        goals[j] = cargo;
+        cargo_goals[j] = cargo;
       }
       else {
-        goals[j] = graph.unloading_ports[0];
+        goals[j] = cargo_goals[j]->find_closest_port(graph.unloading_ports);
       }
     }
   }
@@ -321,4 +323,11 @@ std::vector<uint> Instance::compute_percentiles() const {
   }
 
   return percentiles;
+}
+
+bool Instance::is_port(Vertex* vertex) const {
+  if (std::find(graph.unloading_ports.begin(), graph.unloading_ports.end(), vertex) != graph.unloading_ports.end()) {
+    return true;
+  }
+  else return false;
 }
