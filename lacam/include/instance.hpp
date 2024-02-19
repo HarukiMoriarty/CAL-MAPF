@@ -45,6 +45,8 @@ struct Instance {
 
   // Simple feasibility check of instance
   bool is_valid(const int verbose = 0) const;
+  // Check if reached port
+  bool is_port(Vertex* port) const;
 
   // Check agents when reaching goals with cache
   uint update_on_reaching_goals_with_cache(
