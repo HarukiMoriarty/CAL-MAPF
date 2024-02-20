@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 class ExperimentParameters(TypedDict):
-    map: str
+    map: List[str]
     cache: List[str]
     ngoals: List[int]
     goals_k: List[int]
