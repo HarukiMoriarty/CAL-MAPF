@@ -9,9 +9,23 @@ Graph::~Graph()
 }
 
 // regular function to load graph
+static const std::regex r_type = std::regex(R"(type\s(\s+))");
 static const std::regex r_height = std::regex(R"(height\s(\d+))");
 static const std::regex r_width = std::regex(R"(width\s(\d+))");
 static const std::regex r_map = std::regex(R"(map)");
+
+GraphType Graph::get_graph_type(std::string type) {
+  if (type == "single_port") {
+    return GraphType::SINGLE_PORT;
+  }
+  else if (type == "multi_port") {
+    return GraphType::MULTI_PORT;
+  }
+  else {
+    logger->error("Invalid graph type!");
+    exit(1);
+  }
+}
 
 Graph::Graph(
   const std::string& filename,
@@ -40,6 +54,10 @@ Graph::Graph(
   while (getline(file, line)) {
     // for CRLF coding
     if (*(line.end() - 1) == 0x0d) line.pop_back();
+
+    if (std::regex_match(line, results, r_type)) {
+      type = get_graph_type(results[1].str());
+    }
 
     if (std::regex_match(line, results, r_height)) {
       height = std::stoi(results[1].str());

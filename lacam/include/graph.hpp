@@ -5,6 +5,13 @@
 #include "utils.hpp"
 #include "cache.hpp"
 
+
+ // Graph Type
+enum class GraphType {
+  SINGLE_PORT,
+  MULTI_PORT
+};
+
 struct Graph {
   Vertices V;                             // without nullptr
   Vertices U;                             // with nullptr, i.e., |U| = width * height
@@ -15,6 +22,7 @@ struct Graph {
 
   int width;                              // grid width
   int height;                             // grid height
+  GraphType type;                         // graph type
   uint goals_cnt = 0;                     // used for get next goals
   std::mt19937* randomSeed;
 
@@ -25,6 +33,7 @@ struct Graph {
   // Destructor
   ~Graph();
 
+  GraphType get_graph_type(std::string type);
   int size() const;                       // the number of vertices, |V|
   Vertex* random_target_vertex();
   void fill_goals_list(uint goals_m, uint goals_k, uint ngoals);

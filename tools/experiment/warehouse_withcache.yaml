@@ -3,7 +3,7 @@ cache: ["LRU", "FIFO", "RANDOM"]
 ngoals: [1000]
 goals_k: [20, 40, 60, 80]
 goals_m: [100]
-nagents: [5, 10, 20, 40]
+nagents: [5, s10, 20, 40]
 seed: 0
 time_limit_sec: 10
 output_step_result: "./result/step_result.txt"
