@@ -82,65 +82,54 @@ int Cache::_get_cache_evited_policy_index(const uint group) {
     }
 }
 
-std::vector<uint> Cache::_get_cache_block_in_cache_position(Vertex* block) {
-    std::vector<uint> position;
-    for (uint i = 0; i < node_id.size(); i++) {
-        for (uint j = 0; j < node_id[i].size(); j++) {
-            if (node_id[i][j] == block) {
-                position.push_back(i);
-                position.push_back(j);
-                break;
-            }
+int Cache::_get_cache_block_in_cache_position(Vertex* block) {
+    int index = -1;
+    for (uint i = 0; i < node_id[block->group].size(); i++) {
+        if (node_id[block->group][i] == block) {
+            index = i;
+            break;
         }
+
     }
     // Cache goals must in cache
-    assert(position.size() == 2);
-    return position;
+    assert(index != -1);
+    return index;
 }
 
-std::vector<int> Cache::_get_cargo_in_cache_position(Vertex* cargo) {
-    std::vector<int> position;
-    position.push_back(-1);
-    position.push_back(-1);
-    for (uint i = 0; i < node_cargo.size(); i++) {
-        for (uint j = 0; j < node_cargo[i].size(); j++) {
-            if (node_cargo[i][j] == cargo) {
-                position[0] = i;
-                position[1] = j;
-                break;
-            }
+int Cache::_get_cargo_in_cache_position(Vertex* cargo) {
+    int index = -1;
+    for (uint i = 0; i < node_cargo[cargo->group].size(); i++) {
+        if (node_cargo[cargo->group][i] == cargo) {
+            index = i;
+            break;
         }
     }
-    return position;
+    return index;
 }
 
 bool Cache::_is_cargo_in_coming_cache(Vertex* cargo) {
-    for (uint i = 0; i < node_coming_cargo.size(); i++) {
-        for (uint j = 0; j < node_coming_cargo[i].size(); j++) {
-            if (node_coming_cargo[i][j] == cargo) {
-                return true;
-            }
+    for (uint i = 0; i < node_coming_cargo[cargo->group].size(); i++) {
+        if (node_coming_cargo[cargo->group][i] == cargo) {
+            return true;
         }
     }
     return false;
 }
 
 Vertex* Cache::try_cache_cargo(Vertex* cargo) {
-    std::vector<int> cache_position = _get_cargo_in_cache_position(cargo);
-    int cache_group = cache_position[0];
-    int cache_index = cache_position[1];
+    int cache_index = _get_cargo_in_cache_position(cargo);
 
     // If we can find cargo cached and is not reserved to be replaced , we go to cache and get it
-    if (cache_group != -1 && cache_index != -1 && bit_cache_insert_lock[cache_group][cache_index] == 0) {
-        logger->debug("Cache hit! Agent will go {} to get cargo {}", *node_id[cache_group][cache_index], *cargo);
+    if (cache_index != -1 && bit_cache_insert_lock[cargo->group][cache_index] == 0) {
+        logger->debug("Cache hit! Agent will go {} to get cargo {}", *node_id[cargo->group][cache_index], *cargo);
         // For here, we allow multiple agents lock on cache get position
         // It is impossible that a coming agent move cargo to this 
         // position while the cargo has already here
-        bit_cache_get_lock[cache_group][cache_index] += 1;
+        bit_cache_get_lock[cargo->group][cache_index] += 1;
         // We also update cache evicted policy statistics
-        _update_cache_evited_policy_statistics(cache_group, cache_index, false);
+        _update_cache_evited_policy_statistics(cargo->group, cache_index, false);
 
-        return node_id[cache_group][cache_index];
+        return node_id[cargo->group][cache_index];
     }
 
     // If we cannot find cargo cached, we directly go to warehouse
@@ -148,13 +137,13 @@ Vertex* Cache::try_cache_cargo(Vertex* cargo) {
     return cargo;
 }
 
-Vertex* Cache::try_insert_cache(uint group, Vertex* cargo, std::vector<Vertex*> port_list) {
-    // Calculate closet port
-    Vertex* unloading_port = cargo->find_closest_port(port_list);
+Vertex* Cache::try_insert_cache(Vertex* cargo, std::vector<Vertex*> port_list) {
+    int group = cargo->group;
+    Vertex* unloading_port = port_list[group];
 
     // First, if cargo has already cached or is coming on the way, we directly go
     // to unloading port, for simplify, we just check cache group here
-    if (_get_cargo_in_cache_position(cargo)[0] != -1 || _is_cargo_in_coming_cache(cargo)) return unloading_port;
+    if (_get_cargo_in_cache_position(cargo) != -1 || _is_cargo_in_coming_cache(cargo)) return unloading_port;
 
     // Second try to find a empty position to insert cargo
     // TODO: optimization, can set a flag to skip this
@@ -191,42 +180,30 @@ Vertex* Cache::try_insert_cache(uint group, Vertex* cargo, std::vector<Vertex*> 
 }
 
 bool Cache::update_cargo_into_cache(Vertex* cargo, Vertex* cache_node) {
-    std::vector<int> cargo_position = _get_cargo_in_cache_position(cargo);
-    int cargo_index = cargo_position[0];
-    int cargo_group = cargo_position[1];
-
-    std::vector<uint> cache_position = _get_cache_block_in_cache_position(cache_node);
-    uint cache_group = cache_position[0];
-    uint cache_index = cache_position[1];
+    int cargo_index = _get_cargo_in_cache_position(cargo);
+    int cache_index = _get_cache_block_in_cache_position(cache_node);
 
     // We should only update it while it is not in cache
     assert(cargo_index == -1);
-    assert(cargo_group == -1);
     assert(_is_cargo_in_coming_cache(cargo));
 
     // Update cache
     logger->debug("Update cargo {} to cache block {}", *cargo, *cache_node);
-    node_cargo[cache_group][cache_index] = cargo;
-    bit_cache_insert_lock[cache_group][cache_index] -= 1;
+    node_cargo[cache_node->group][cache_index] = cargo;
+    bit_cache_insert_lock[cache_node->group][cache_index] -= 1;
     return true;
 }
 
 bool Cache::update_cargo_from_cache(Vertex* cargo, Vertex* cache_node) {
-    std::vector<int> cargo_position = _get_cargo_in_cache_position(cargo);
-    int cargo_index = cargo_position[0];
-    int cargo_group = cargo_position[1];
-
-    std::vector<uint> cache_position = _get_cache_block_in_cache_position(cache_node);
-    uint cache_group = cache_position[0];
-    uint cache_index = cache_position[1];
+    int cargo_index = _get_cargo_in_cache_position(cargo);
+    int cache_index = _get_cache_block_in_cache_position(cache_node);
 
     // We must make sure the cargo is still in the cache
     assert(cargo_index != -1);
-    assert(cargo_group != -1);
 
     // Simply release lock
     logger->debug("Agents gets {} from cache {}", *cargo, *cache_node);
-    bit_cache_get_lock[cache_group][cache_index] -= 1;
+    bit_cache_get_lock[cache_node->group][cache_index] -= 1;
     return true;
 }
 

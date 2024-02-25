@@ -16,14 +16,15 @@ struct Graph {
   Vertices V;                             // without nullptr
   Vertices U;                             // with nullptr, i.e., |U| = width * height
   Vertices unloading_ports;               // unloading port
-  Cache* cache;                            // cache
-  Vertices cargo_vertices;
-  Vertices goals_list;                    // goals list: length [ngoals], maximum [k] different goals in any [m] length sublist 
+  Cache* cache;                           // cache
+  std::vector<Vertices> cargo_vertices;
+  std::vector<Vertices> goals_list;       // goals list: length [ngoals], maximum [k] different goals in any [m] length sublist 
 
   int width;                              // grid width
   int height;                             // grid height
+  int group;                              // group number
   GraphType type;                         // graph type
-  uint goals_cnt = 0;                     // used for get next goals
+  std::vector<uint> goals_cnt;            // used for get next goals
   std::mt19937* randomSeed;
 
   std::shared_ptr<spdlog::logger> logger;
@@ -35,9 +36,9 @@ struct Graph {
 
   GraphType get_graph_type(std::string type);
   int size() const;                       // the number of vertices, |V|
-  Vertex* random_target_vertex();
-  void fill_goals_list(uint goals_m, uint goals_k, uint ngoals);
-  Vertex* get_next_goal();
+  Vertex* random_target_vertex(int group);
+  void fill_goals_list(int group, uint goals_m, uint goals_k, uint ngoals);
+  Vertex* get_next_goal(int group);
 };
 
 bool is_same_config(const Config& C1, const Config& C2);          // Check equivalence of two configurations

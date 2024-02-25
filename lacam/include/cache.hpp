@@ -49,16 +49,16 @@ struct Cache {
     /**
      * @brief Get the index of a specified cache block.
      * @param block A pointer to the Vertex representing the block.
-     * @return (group, index) The position of the cache block.
+     * @return index of the cache block.
      */
-    std::vector<uint> _get_cache_block_in_cache_position(Vertex* block);
+    int _get_cache_block_in_cache_position(Vertex* block);
 
     /**
      * @brief Check if a specific cargo is cached.
      * @param cargo A pointer to the Vertex representing the cargo.
-     * @return (group, index) The position of the cache block.
+     * @return index of the cache block, -1 if not find.
      */
-    std::vector<int> _get_cargo_in_cache_position(Vertex* cargo);
+    int _get_cargo_in_cache_position(Vertex* cargo);
 
     /**
      * @brief Check if a specific cargo is coming to cache
@@ -79,14 +79,13 @@ struct Cache {
     /**
      * @brief Find a cache block for cargo that is not cached (cache-miss) and set goals.
      *        This is triggered when a cargo cache miss occurs.
-     * @param cache_group A number of agent group
      * @param cargo A pointer to the Vertex representing the cargo.
      * @param port_list A pointer to the vector of Vertex representing the unloading ports.
      * @return A pointer to the Vertex representing the cache block, or
      *         the unloading port Vertex if a suitable block cannot be found or
      *         if the cargo is already cached (in a multi-agent context).
      */
-    Vertex* try_insert_cache(uint group, Vertex* cargo, std::vector<Vertex*> port_list);
+    Vertex* try_insert_cache(Vertex* cargo, std::vector<Vertex*> port_list);
 
     /**
      * @brief Insert cargo into cache. This occurs when an agent brings a

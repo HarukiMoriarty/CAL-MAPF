@@ -60,14 +60,15 @@ int get_random_int(std::mt19937* MT, int from, int to);
 struct Vertex {
   const int id;         // index for V in Graph
   const int index;      // index for U (width * y + x) in Graph
-  const int width;      // indth of graph
+  const int width;      // width of graph
+  const int group;      // group number, supported for multiport 
   bool cargo = false;   // indicate cargo vertex
   std::vector<Vertex*> neighbor;
 
-  Vertex(int _id, int _index, int _width);
+  Vertex(int _id, int _index, int _width, int _group);
 
   bool operator==(const Vertex& other) const {
-    return id == other.id && index == other.index && width == other.width;
+    return id == other.id && index == other.index && width == other.width && group == other.group;
   }
 
   // Reload << operator
@@ -76,26 +77,6 @@ struct Vertex {
     int y = v.index / v.width;
     os << "(" << x << ", " << y << ")";
     return os;
-  }
-
-  Vertex* find_closest_port(std::vector<Vertex*> port_list) {
-    // We use hanmington distance here
-    int x = index % width;
-    int y = index / width;
-    int min_dist = INT_MAX;
-    Vertex* min_port = nullptr;
-
-    for (uint i = 0; i < port_list.size(); i++) {
-      int port_x = port_list[i]->index % port_list[i]->width;
-      int port_y = port_list[i]->index / port_list[i]->width;
-
-      int dist = std::abs(port_x - x) + std::abs(port_y - y);
-      if (dist < min_dist) {
-        min_dist = dist;
-        min_port = port_list[i];
-      }
-    }
-    return min_port;
   }
 };
 

@@ -25,6 +25,7 @@ struct Instance {
   std::vector<uint> bit_status;
 
   const uint nagents;             // number of agents
+  std::vector<int> agent_group;  // agents group
   const uint ngoals;              // number of goals
 
   std::shared_ptr<spdlog::logger> logger;
@@ -43,6 +44,8 @@ struct Instance {
   // Destructor
   ~Instance() {}
 
+  // Assign agent group
+  void assign_agent_group();
   // Simple feasibility check of instance
   bool is_valid(const int verbose = 0) const;
   // Check if reached port
