@@ -76,6 +76,7 @@ Graph::Graph(
   U = Vertices(width * height, nullptr);
   int group_cnt = 0;
   goals_list.resize(group);
+  goals_cnt.resize(group, 0);
 
   if (is_cache(cache_type)) {
     // Generate cache
