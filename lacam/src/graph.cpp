@@ -75,6 +75,7 @@ Graph::Graph(
 
   U = Vertices(width * height, nullptr);
   int group_cnt = 0;
+  goals_list.resize(group);
 
   if (is_cache(cache_type)) {
     // Generate cache
@@ -87,11 +88,10 @@ Graph::Graph(
 
     // Read map
     while (getline(file, line)) {
+      logger->debug("{}", line);
       if (line.empty()) {
-        // Update group index
-        group_cnt++;
         // Stop reading if we reached specified group
-        if (group >= group_cnt) break;
+        if (group_cnt >= group) break;
 
         // Update cache variables
         cache->node_cargo.push_back(tmp_cache_node);
@@ -122,6 +122,10 @@ Graph::Graph(
         // Clear tmp variables
         tmp_cache_node.clear();
         tmp_cargo_vertices.clear();
+
+        // Update group index
+        group_cnt++;
+        continue;
       }
 
       // for CRLF coding
@@ -219,16 +223,18 @@ Graph::Graph(
 
     while (getline(file, line)) {
       if (line.empty()) {
-        // Update group index
-        group_cnt++;
         // Stop reading if we reached specified group
-        if (group >= group_cnt) break;
+        if (group_cnt >= group) break;
 
         // Update cargo variables
         cargo_vertices.push_back(tmp_cargo_vertices);
 
         // Clear tmp variables
         tmp_cargo_vertices.clear();
+
+        // Update group index
+        group_cnt++;
+        continue;
       }
       // for CRLF coding
       if (*(line.end() - 1) == 0x0d) line.pop_back();
@@ -317,7 +323,7 @@ void Graph::fill_goals_list(int group, uint goals_m, uint goals_k, uint ngoals) 
   std::unordered_set<Vertex*> diff_goals;
   uint goals_generated = 0;
 
-  while (goals_list.size() < ngoals) {
+  while (goals_list[group].size() < ngoals) {
     if (goals_generated % 1000 == 0) {
       logger->info("Generated {:5}/{:5} goals.", goals_generated, ngoals);
     }
