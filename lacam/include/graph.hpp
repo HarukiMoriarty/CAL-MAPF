@@ -4,12 +4,19 @@
 #pragma once
 #include "utils.hpp"
 #include "cache.hpp"
-
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/discrete_distribution.hpp>
 
  // Graph Type
 enum class GraphType {
   SINGLE_PORT,
   MULTI_PORT
+};
+
+// Goals generation type
+enum class GoalGenerationType {
+  MK,
+  Zhang
 };
 
 struct Graph {
@@ -30,14 +37,14 @@ struct Graph {
   std::shared_ptr<spdlog::logger> logger;
 
   // Instructor with cache
-  Graph(const std::string& filename, std::shared_ptr<spdlog::logger> _logger, uint goals_m, uint goals_k, uint ngoals, CacheType cache_type, std::mt19937* _randomSeed = 0);
+  Graph(const std::string& filename, std::shared_ptr<spdlog::logger> _logger, GoalGenerationType goal_generation_type, uint goals_m, uint goals_k, uint ngoals, CacheType cache_type, std::mt19937* _randomSeed = 0);
   // Destructor
   ~Graph();
 
   GraphType get_graph_type(std::string type);
   int size() const;                       // the number of vertices, |V|
   Vertex* random_target_vertex(int group);
-  void fill_goals_list(int group, uint goals_m, uint goals_k, uint ngoals);
+  void fill_goals_list(GoalGenerationType goal_generation_type, int group, uint goals_m, uint goals_k, uint ngoals);
   Vertex* get_next_goal(int group);
 };
 

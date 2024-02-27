@@ -1,5 +1,47 @@
 #include "../include/graph.hpp"
 
+
+/* Help function */
+double calculate_sum(int start, int end) {
+  double sum = 0.0;
+  for (int i = start; i <= end; ++i) {
+    sum += 1.0 / (i + 1);
+  }
+  return sum;
+}
+
+std::vector<double> calculate_probabilities(int n) {
+  std::vector<double> probabilities(n);
+
+  // The first 10% of items
+  double sum_first_10 = calculate_sum(0, int(n * 0.1) - 1);
+  for (int i = 0; i < int(n * 0.1); ++i) {
+    probabilities[i] = 0.7 / sum_first_10 * (1.0 / (i + 1));
+  }
+
+  // For item 10, it has the same probability as item 9
+  probabilities[int(n * 0.1)] = probabilities[int(n * 0.1) - 1];
+
+  // The next 20% of items
+  double sum_next_20 = calculate_sum(int(n * 0.1), int(n * 0.3) - 1);
+  for (int i = int(n * 0.1) + 1; i < int(n * 0.3); ++i) {
+    probabilities[i] = 0.2 / sum_next_20 * (1.0 / (i + 1));
+  }
+
+  // For item 30, it has the same probability as item 29
+  probabilities[int(n * 0.3)] = probabilities[int(n * 0.3) - 1];
+
+  // The last 70% of items
+  double sum_last_70 = calculate_sum(int(n * 0.3), n - 1);
+  for (int i = int(n * 0.3) + 1; i < n; ++i) {
+    probabilities[i] = 0.1 / sum_last_70 * (1.0 / (i + 1));
+  }
+
+  return probabilities;
+}
+/* Help function end*/
+
+
 Graph::~Graph()
 {
   for (auto& v : V)
@@ -31,6 +73,7 @@ GraphType Graph::get_graph_type(std::string type) {
 Graph::Graph(
   const std::string& filename,
   std::shared_ptr<spdlog::logger> _logger,
+  GoalGenerationType goal_generation_type,
   uint goals_m,
   uint goals_k,
   uint ngoals,
@@ -302,7 +345,7 @@ Graph::Graph(
   logger->info("Generating goals...");
 
   for (int i = 0; i < group; i++) {
-    fill_goals_list(i, goals_m, goals_k, ngoals);
+    fill_goals_list(goal_generation_type, i, goals_m, goals_k, ngoals);
   }
 }
 
@@ -318,46 +361,63 @@ Vertex* Graph::random_target_vertex(int group) {
   return *it;
 }
 
-void Graph::fill_goals_list(int group, uint goals_m, uint goals_k, uint ngoals) {
-  std::deque<Vertex*> sliding_window;
-  std::unordered_map<Vertex*, int> goal_count;
-  std::unordered_set<Vertex*> diff_goals;
-  uint goals_generated = 0;
+void Graph::fill_goals_list(GoalGenerationType goal_generation_type, int group, uint goals_m, uint goals_k, uint ngoals) {
+  if (goal_generation_type == GoalGenerationType::MK) {
+    std::deque<Vertex*> sliding_window;
+    std::unordered_map<Vertex*, int> goal_count;
+    std::unordered_set<Vertex*> diff_goals;
+    uint goals_generated = 0;
 
-  while (goals_list[group].size() < ngoals) {
-    if (goals_generated % 1000 == 0) {
-      logger->info("Generated {:5}/{:5} goals.", goals_generated, ngoals);
-    }
-
-    Vertex* selected_goal = random_target_vertex(group);
-    if (!selected_goal) {
-      // Stop if no more goals can be selected
-      break;
-    }
-
-    if (sliding_window.size() == goals_m) {
-      Vertex* removed_goal = sliding_window.front();
-      sliding_window.pop_front();
-      goal_count[removed_goal]--;
-      if (goal_count[removed_goal] == 0) {
-        goal_count.erase(removed_goal);
-        diff_goals.erase(removed_goal);
+    while (goals_list[group].size() < ngoals) {
+      if (goals_generated % 1000 == 0) {
+        logger->info("Generated {:5}/{:5} goals.", goals_generated, ngoals);
       }
-    }
 
-    if (diff_goals.size() == goals_k) {
-      int index = get_random_int(randomSeed, 0, goals_k - 1);
-      auto it = diff_goals.begin();
-      std::advance(it, index);
-      selected_goal = *it;
-    }
+      Vertex* selected_goal = random_target_vertex(group);
+      if (!selected_goal) {
+        // Stop if no more goals can be selected
+        break;
+      }
 
-    // Update status
-    sliding_window.push_back(selected_goal);
-    goal_count[selected_goal]++;
-    diff_goals.insert(selected_goal);
-    goals_list[group].push_back(selected_goal);
-    goals_generated++;
+      if (sliding_window.size() == goals_m) {
+        Vertex* removed_goal = sliding_window.front();
+        sliding_window.pop_front();
+        goal_count[removed_goal]--;
+        if (goal_count[removed_goal] == 0) {
+          goal_count.erase(removed_goal);
+          diff_goals.erase(removed_goal);
+        }
+      }
+
+      if (diff_goals.size() == goals_k) {
+        int index = get_random_int(randomSeed, 0, goals_k - 1);
+        auto it = diff_goals.begin();
+        std::advance(it, index);
+        selected_goal = *it;
+      }
+
+      // Update status
+      sliding_window.push_back(selected_goal);
+      goal_count[selected_goal]++;
+      diff_goals.insert(selected_goal);
+      goals_list[group].push_back(selected_goal);
+      goals_generated++;
+    }
+  }
+  // The generation method that is based on "Zhang, Y., 2016. Correlated storage assignment strategy to reduce travel distance in order picking. IFAC-PapersOnLine, 49(2), pp.30-35."
+  // A summary of the method.
+  // 10% of items have a sum of 70% probability to be selected (A-class). 20% of items with 20% probability (B-class), 70% of items with 10% (C-class)
+  // Assumptions:
+  // 1. The probability for each item decreases as the item index increases.
+  // 2. The last item in A-class has the same probability as the first item in B-class.
+  // 3. The last item in B-class has the same probability as the first item in C-class.
+  // 4. The sum of the probabilities for all A-class items,B-class items, and C-class items are 70%, 20%, and 10%, correspondingly.
+  else if (goal_generation_type == GoalGenerationType::Zhang) {
+    std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group].size());
+    boost::random::discrete_distribution<> dist(item_prob);
+    for (uint i = 0; i < ngoals; i++) {
+      goals_list[group].push_back(cargo_vertices[group][dist(randomSeed)]);
+    }
   }
 }
 

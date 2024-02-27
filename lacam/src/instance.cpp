@@ -4,12 +4,13 @@ Instance::Instance(
   const std::string& map_filename,
   std::mt19937* MT,
   std::shared_ptr<spdlog::logger> _logger,
-  uint goals_m,
-  uint goals_k,
+  GoalGenerationType goal_generation_type,
   CacheType cache_type,
   const uint _nagents,
-  const uint _ngoals)
-  : graph(Graph(map_filename, _logger, goals_m, goals_k, _ngoals, cache_type, MT)),
+  const uint _ngoals,
+  const uint goals_m,
+  const uint goals_k)
+  : graph(Graph(map_filename, _logger, goal_generation_type, goals_m, goals_k, _ngoals, cache_type, MT)),
   starts(Config()),
   goals(Config()),
   nagents(_nagents),

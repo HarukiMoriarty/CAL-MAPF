@@ -75,7 +75,7 @@ struct Vertex {
   friend std::ostream& operator<<(std::ostream& os, const Vertex& v) {
     int x = v.index % v.width;
     int y = v.index / v.width;
-    os << "(" << x << ", " << y << ")";
+    os << "(" << x << ", " << y << ", " << v.group << ")";
     return os;
   }
 };
@@ -85,21 +85,6 @@ using Vertices = std::vector<Vertex*>;
 using Config = std::vector<Vertex*>;
 // Solution: a sequence of configurations
 using Solution = std::vector<Config>;
-
-// Overload the << for Config
-inline std::ostream& operator<<(std::ostream& os, const Config& config) {
-  os << "[";
-  for (size_t i = 0; i < config.size(); ++i) {
-    if (config[i]) {  // Check if the pointer is not null
-      os << *config[i];  // Use the overloaded << for Vertex
-    }
-    if (i < config.size() - 1) {
-      os << ", ";  // Add a comma between elements
-    }
-  }
-  os << "]";
-  return os;
-}
 
 // Overload the spdlog for Vertex
 template <>

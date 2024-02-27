@@ -35,11 +35,12 @@ struct Instance {
     const std::string& map_filename,
     std::mt19937* MT,
     std::shared_ptr<spdlog::logger> _logger,
-    uint goals_m,
-    uint goals_k,
+    GoalGenerationType goals_generation_type,
     CacheType cache_type,
     const uint _nagents = 1,
-    const uint _ngoals = 1
+    const uint _ngoals = 1,
+    const uint goals_m = 0,
+    const uint goals_k = 0
   );
   // Destructor
   ~Instance() {}
