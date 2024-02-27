@@ -1,7 +1,8 @@
 map: ["assets/warehouse/without_cache/warehouse-51-78-multi_port.map", "assets/warehouse/without_cache/warehouse-51-78-single_port.map"]
 cache: ["NONE"]
 ngoals: [1000]
-goals_k: [5, 10, 20, 40]
+gg: ["MK"]
+goals_k: [1, 2, 4, 8, 16, 32, 40]
 goals_m: [50]
 nagents: [4, 12, 24, 48]
 seed: 0

@@ -374,10 +374,6 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, int group, 
       }
 
       Vertex* selected_goal = random_target_vertex(group);
-      if (!selected_goal) {
-        // Stop if no more goals can be selected
-        break;
-      }
 
       if (sliding_window.size() == goals_m) {
         Vertex* removed_goal = sliding_window.front();
