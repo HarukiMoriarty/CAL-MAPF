@@ -1,6 +1,6 @@
 #include "../include/utils.hpp"
 
-Vertex::Vertex(int _id, int _index, int _width) : id(_id), index(_index), width(_width), neighbor(Vertices()) {}
+Vertex::Vertex(int _id, int _index, int _width, int _group) : id(_id), index(_index), width(_width), group(_group), neighbor(Vertices()) {}
 
 void info(const int level, const int verbose) { std::cout << std::endl; }
 

@@ -7,23 +7,23 @@
 #include <cassert>
 
 struct Cache {
-    Vertices node_cargo;
-    Vertices node_id;
-    Vertices node_coming_cargo;
-    std::vector<uint> bit_cache_get_lock;
-    std::vector<uint> bit_cache_insert_lock;
+    std::vector<Vertices> node_cargo;
+    std::vector<Vertices> node_id;
+    std::vector<Vertices> node_coming_cargo;
+    std::vector<std::vector<uint>> bit_cache_get_lock;
+    std::vector<std::vector<uint>> bit_cache_insert_lock;
     std::shared_ptr<spdlog::logger> logger;
     CacheType cache_type;
     std::mt19937* randomSeed;
-    std::vector<bool> is_empty;
+    std::vector<std::vector<bool>> is_empty;
 
     // LRU paras
-    std::vector<int> LRU;
-    uint LRU_cnt = 0;
+    std::vector<std::vector<int>> LRU;
+    std::vector<uint> LRU_cnt;
 
     // FIFO paras
-    std::vector<int> FIFO;
-    uint FIFO_cnt = 0;
+    std::vector<std::vector<int>> FIFO;
+    std::vector<uint> FIFO_cnt;
 
     // Random paras (no paras)
 
@@ -32,32 +32,33 @@ struct Cache {
 
     /**
      * @brief Update evicted policy statistics
-     * @param lru_index An index used for lru policy
+     * @param group cache block group number
+     * @param index An index used for lru/fifo policy
      * @param fifo_option An option to control fifo policy
      * @return true if successful, false otherwise
     */
-    bool _update_cache_evited_policy_statistics(uint index, bool fifo_option);
+    bool _update_cache_evited_policy_statistics(const uint group, const uint index, const bool fifo_option);
 
     /**
      * @brief Get index of evicted cache block
-     * @param
+     * @param group cache block group number
      * @return true if successful, false otherwise
     */
-    int _get_cache_evited_policy_index();
+    int _get_cache_evited_policy_index(const uint group);
 
     /**
      * @brief Get the index of a specified cache block.
      * @param block A pointer to the Vertex representing the block.
-     * @return The index of the cache block.
+     * @return index of the cache block.
      */
-    int _get_cache_block_in_cache_index(Vertex* block);
+    int _get_cache_block_in_cache_position(Vertex* block);
 
     /**
      * @brief Check if a specific cargo is cached.
      * @param cargo A pointer to the Vertex representing the cargo.
-     * @return The index of the cached cargo, or -1 if not cached.
+     * @return index of the cache block, -1 if not find.
      */
-    int _get_cargo_in_cache_index(Vertex* cargo);
+    int _get_cargo_in_cache_position(Vertex* cargo);
 
     /**
      * @brief Check if a specific cargo is coming to cache

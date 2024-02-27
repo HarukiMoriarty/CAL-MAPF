@@ -4,12 +4,13 @@ Instance::Instance(
   const std::string& map_filename,
   std::mt19937* MT,
   std::shared_ptr<spdlog::logger> _logger,
-  uint goals_m,
-  uint goals_k,
+  GoalGenerationType goal_generation_type,
   CacheType cache_type,
   const uint _nagents,
-  const uint _ngoals)
-  : graph(Graph(map_filename, _logger, goals_m, goals_k, _ngoals, cache_type, MT)),
+  const uint _ngoals,
+  const uint goals_m,
+  const uint goals_k)
+  : graph(Graph(map_filename, _logger, goal_generation_type, goals_m, goals_k, _ngoals, cache_type, MT)),
   starts(Config()),
   goals(Config()),
   nagents(_nagents),
@@ -17,6 +18,7 @@ Instance::Instance(
   logger(std::move(_logger))
 {
   const auto K = graph.size();
+  assign_agent_group();
 
   // set agents random start potition
   auto s_indexes = std::vector<int>(K);
@@ -34,7 +36,7 @@ Instance::Instance(
   int j = 0;
   while (true) {
     if (j >= K) return;
-    Vertex* goal = graph.get_next_goal();
+    Vertex* goal = graph.get_next_goal(agent_group[j]);
     goals.push_back(goal);
     cargo_goals.push_back(goal);
     bit_status.push_back(0);      // At the begining, the cache is empty, all agents should at status 0
@@ -99,7 +101,7 @@ uint Instance::update_on_reaching_goals_with_cache(
       }
 
       // Update goals and steps
-      goals[j] = cargo_goals[j]->find_closest_port(graph.unloading_ports);
+      goals[j] = graph.unloading_ports[cargo_goals[j]->group];
     }
   }
 
@@ -167,7 +169,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         logger->debug("Agent {} has bring cargo {} to unloading port", j, *cargo_goals[j]);
 
         // Generate new cargo goal
-        Vertex* cargo = graph.get_next_goal();
+        Vertex* cargo = graph.get_next_goal(agent_group[j]);
         cargo_goals[j] = cargo;
         Vertex* goal = graph.cache->try_cache_cargo(cargo);
 
@@ -228,7 +230,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         logger->debug("Agent {} has bring cargo {} to unloading port", j, *cargo_goals[j]);
 
         // Generate new cargo goal
-        Vertex* cargo = graph.get_next_goal();
+        Vertex* cargo = graph.get_next_goal(agent_group[j]);
         cargo_goals[j] = cargo;
         Vertex* goal = graph.cache->try_cache_cargo(cargo);
 
@@ -289,12 +291,12 @@ uint Instance::update_on_reaching_goals_without_cache(
           cargo_steps.push_back(cargo_cnts[j]);
           cargo_cnts[j] = 0;
         }
-        Vertex* cargo = graph.get_next_goal();
+        Vertex* cargo = graph.get_next_goal(agent_group[j]);
         goals[j] = cargo;
         cargo_goals[j] = cargo;
       }
       else {
-        goals[j] = cargo_goals[j]->find_closest_port(graph.unloading_ports);
+        goals[j] = graph.unloading_ports[cargo_goals[j]->group];
       }
     }
   }
@@ -330,4 +332,16 @@ bool Instance::is_port(Vertex* vertex) const {
     return true;
   }
   else return false;
+}
+
+void Instance::assign_agent_group() {
+  // Ensure nagents is a multiple of ngroups
+  assert(nagents % graph.group == 0);
+  int per_group_agent = nagents / graph.group;
+  agent_group.resize(nagents);
+
+  for (uint i = 0; i < nagents; ++i) {
+    // Assign each agent to a group
+    agent_group[i] = i / per_group_agent;
+  }
 }

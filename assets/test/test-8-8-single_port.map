@@ -1,4 +1,5 @@
-type octile
+type single_port
+group 1
 height 8
 width 8
 map
@@ -10,3 +11,4 @@ T...CH.T
 T......T
 T......T
 TTTTTTTT
+

@@ -1,0 +1,23 @@
+type multi_port
+group 2
+height 16
+width 16
+map
+TTTTTTTTTTTTTTTT
+T..............T
+T...CC...HH....T
+TU..CC...HH....T
+T...CC...HH....T
+T..............T
+T..............T
+T..............T
+
+T..............T
+T...CC....H....T
+TU..CC...HH....T
+T.........H....T
+T..............T
+T..............T
+T..............T
+TTTTTTTTTTTTTTTT
+

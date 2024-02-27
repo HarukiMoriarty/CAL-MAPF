@@ -12,8 +12,9 @@ int main(int argc, char* argv[])
   program.add_argument("-m", "--map").help("map file").required();                                                                              // map file
   program.add_argument("-ca", "--cache").help("cache type: NONE, LRU, FIFO, RANDOM").default_value(std::string("NONE"));                        // cache type                    
   program.add_argument("-ng", "--ngoals").help("number of goals").required();                                                                   // number of goals: agent first go to get goal, and then return to unloading port
-  program.add_argument("-gk", "--goals-k").help("maximum k different number of goals in m segment of all goals").required();
-  program.add_argument("-gm", "--goals-m").help("maximum k different number of goals in m segment of all goals").required();
+  program.add_argument("-gg", "--goals_generation").help("goals generation strategy: MK, Zhang").required();                                    // goals generation type
+  program.add_argument("-gk", "--goals-k").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
+  program.add_argument("-gm", "--goals-m").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
   program.add_argument("-na", "--nagents").help("number of agents").required();                                                                 // number of agents
   program.add_argument("-s", "--seed").help("seed").default_value(std::string("0"));                                                            // random seed
   program.add_argument("-v", "--verbose").help("verbose").default_value(std::string("0"));                                                      // verbose
@@ -44,8 +45,7 @@ int main(int argc, char* argv[])
   const auto output_csv_name = program.get<std::string>("output_csv_result");
   const auto log_short = program.get<bool>("log_short");
   const auto ngoals = std::stoi(program.get<std::string>("ngoals"));
-  const auto goals_m = std::stoi(program.get<std::string>("goals-m"));
-  const auto goals_k = std::stoi(program.get<std::string>("goals-k"));
+  const auto gg = program.get<std::string>("goals_generation");
   const auto nagents = std::stoi(program.get<std::string>("nagents"));
   const auto debug = program.get<bool>("debug");
   if (debug) console->set_level(spdlog::level::debug);
@@ -68,6 +68,24 @@ int main(int argc, char* argv[])
     exit(1);
   }
 
+  GoalGenerationType goal_generation_type;
+  const auto goals_m = std::stoi(program.get<std::string>("goals-m"));
+  const auto goals_k = std::stoi(program.get<std::string>("goals-k"));
+  if (gg == "MK") {
+    if (goals_m == 0 || goals_k == 0) {
+      console->error("For MK generation, both --goals-m and --goals-k must have non-zero values.");
+      exit(1);
+    }
+    goal_generation_type = GoalGenerationType::MK;
+  }
+  else if (gg == "Zhang") {
+    goal_generation_type = GoalGenerationType::Zhang;
+  }
+  else {
+    console->error("Invalid goals_generation strategy specified.");
+    exit(1);
+  }
+
   // check paras
   if (nagents > ngoals) {
     console->error("number of goals must larger or equal to number of agents");
@@ -79,8 +97,11 @@ int main(int argc, char* argv[])
   console->info("Cache type:       {}", cache);
   console->info("Number of goals:  {}", ngoals);
   console->info("Number of agents: {}", nagents);
-  console->info("Goals m:          {}", goals_m);
-  console->info("Goals k:          {}", goals_k);
+  console->info("Goal Generation:  {}", gg);
+  if (goal_generation_type == GoalGenerationType::MK) {
+    console->info("Goals m:          {}", goals_m);
+    console->info("Goals k:          {}", goals_k);
+  }
   console->info("Seed:             {}", seed);
   console->info("Verbose:          {}", verbose);
   console->info("Time limit (sec): {}", time_limit_sec);
@@ -89,7 +110,7 @@ int main(int argc, char* argv[])
   console->info("Debug:            {}", debug);
 
   // generating instance
-  auto ins = Instance(map_name, &MT, console, goals_m, goals_k, cache_type, nagents, ngoals);
+  auto ins = Instance(map_name, &MT, console, goal_generation_type, cache_type, nagents, ngoals, goals_m, goals_k);
   if (!ins.is_valid(1)) {
     console->error("instance is invalid!");
     return 1;
@@ -190,7 +211,7 @@ int main(int argc, char* argv[])
   else {
     console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", ngoals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
-  // log.make_life_long_log(ins, seed);
+  log.make_life_long_log(ins, seed);
 
 
   std::ofstream file(output_csv_name, std::ios::app);

@@ -17,6 +17,7 @@ class ExperimentParameters(TypedDict):
     map: List[str]
     cache: List[str]
     ngoals: List[int]
+    gg: List[str]
     goals_k: List[int]
     goals_m: List[int]
     nagents: List[int]
@@ -48,6 +49,7 @@ def run_experiment(params: ExperimentParameters, dry_run: bool = False):
         "--map", params["map"],
         "--cache", params["cache"],
         "--ngoals", str(params["ngoals"]),
+        "-gg", params["gg"],
         "--goals-k", str(params["goals_k"]),
         "--goals-m", str(params["goals_m"]),
         "--nagents", str(params["nagents"]),
