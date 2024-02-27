@@ -1,9 +1,9 @@
-map: ["assets/warehouse/with_cache/warehouse-63-65-multi_port.map", "assets/warehouse/with_cache/warehouse-63-65-single_port.map"]
+map: ["assets/warehouse/with_cache/warehouse-51-78-multi_port.map", "assets/warehouse/with_cache/warehouse-51-78-single_port.map"]
 cache: ["LRU", "FIFO", "RANDOM"]
 ngoals: [1000]
-goals_k: [20, 40, 60, 80]
-goals_m: [100]
-nagents: [5, 10, 20, 40]
+goals_k: [5, 10, 20, 40]
+goals_m: [50]
+nagents: [4, 12, 24, 48]
 seed: 0
 time_limit_sec: 10
 output_step_result: "./result/step_result.txt"
