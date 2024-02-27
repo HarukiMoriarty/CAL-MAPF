@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
   else {
     console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", ngoals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
-  // log.make_life_long_log(ins, seed);
+  log.make_life_long_log(ins, seed);
 
 
   std::ofstream file(output_csv_name, std::ios::app);

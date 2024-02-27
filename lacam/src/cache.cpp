@@ -16,12 +16,12 @@ Cache::~Cache() {};
 bool Cache::_update_cache_evited_policy_statistics(const uint group, const uint index, const bool fifo_option) {
     switch (cache_type) {
     case CacheType::LRU:
-        LRU_cnt[group] += 1;
+        LRU_cnt[group] = LRU_cnt[group] + 1;
         LRU[group][index] = LRU_cnt[group];
         break;
     case CacheType::FIFO:
         if (fifo_option) {
-            FIFO_cnt[group] += 1;
+            FIFO_cnt[group] = FIFO_cnt[group] + 1;
             FIFO[group][index] = FIFO_cnt[group];
         }
         break;
@@ -133,7 +133,7 @@ Vertex* Cache::try_cache_cargo(Vertex* cargo) {
     }
 
     // If we cannot find cargo cached, we directly go to warehouse
-    logger->debug("Cache miss! Agent will directly to get cargo {}", *cargo);
+    // logger->debug("Cache miss! Agent will directly to get cargo {}", *cargo);
     return cargo;
 }
 
