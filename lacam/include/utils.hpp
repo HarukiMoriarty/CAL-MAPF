@@ -68,7 +68,7 @@ struct Vertex {
   Vertex(int _id, int _index, int _width, int _group);
 
   bool operator==(const Vertex& other) const {
-    return id == other.id && index == other.index && width == other.width && group == other.group;
+    return id == other.id;
   }
 
   // Reload << operator

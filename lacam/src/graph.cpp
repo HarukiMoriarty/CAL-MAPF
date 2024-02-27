@@ -258,7 +258,10 @@ Graph::Graph(
         }
       }
     }
-    // logger->info("Cache blocks:     {}", cache->node_id);
+
+    for (uint i = 0; i < cache->node_id.size(); i++) {
+      logger->info("Cache blocks:     {}", cache->node_id[i]);
+    }
   }
   else {
     // Tmp variables

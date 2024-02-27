@@ -91,6 +91,7 @@ int Cache::_get_cache_block_in_cache_position(Vertex* block) {
         }
 
     }
+
     // Cache goals must in cache
     assert(index != -1);
     return index;
@@ -148,7 +149,7 @@ Vertex* Cache::try_insert_cache(Vertex* cargo, std::vector<Vertex*> port_list) {
     // Second try to find a empty position to insert cargo
     // TODO: optimization, can set a flag to skip this
     for (uint i = 0; i < is_empty[group].size(); i++) {
-        if (is_empty[group][i]) {
+        if (!is_empty[group][i]) {
             logger->debug("Find an empty cache block with index {} {}", i, *node_id[group][i]);
             // We lock this position and update LRU info
             bit_cache_insert_lock[group][i] += 1;
