@@ -223,6 +223,7 @@ int main(int argc, char* argv[])
 
   file << map_name << ","
     << cache << ","
+    << gg << ","
     << ngoals << ","
     << nagents << ","
     << seed << ","
