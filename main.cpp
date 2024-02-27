@@ -12,9 +12,9 @@ int main(int argc, char* argv[])
   program.add_argument("-m", "--map").help("map file").required();                                                                              // map file
   program.add_argument("-ca", "--cache").help("cache type: NONE, LRU, FIFO, RANDOM").default_value(std::string("NONE"));                        // cache type                    
   program.add_argument("-ng", "--ngoals").help("number of goals").required();                                                                   // number of goals: agent first go to get goal, and then return to unloading port
-  program.add_argument("-gg", "--goals-generation").help("goals generation strategy: MK, Zhang").required();                                    // goals generation type
-  program.add_argument("-gk", "--goals-k").help("maximum k different number of goals in m segment of all goals").default_value("0");
-  program.add_argument("-gm", "--goals-m").help("maximum k different number of goals in m segment of all goals").default_value("0");
+  program.add_argument("-gg", "--goals_generation").help("goals generation strategy: MK, Zhang").required();                                    // goals generation type
+  program.add_argument("-gk", "--goals-k").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
+  program.add_argument("-gm", "--goals-m").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
   program.add_argument("-na", "--nagents").help("number of agents").required();                                                                 // number of agents
   program.add_argument("-s", "--seed").help("seed").default_value(std::string("0"));                                                            // random seed
   program.add_argument("-v", "--verbose").help("verbose").default_value(std::string("0"));                                                      // verbose

@@ -414,11 +414,14 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, int group, 
   // 4. The sum of the probabilities for all A-class items,B-class items, and C-class items are 70%, 20%, and 10%, correspondingly.
   else if (goal_generation_type == GoalGenerationType::Zhang) {
     std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group].size());
-    boost::random::discrete_distribution<> dist(item_prob);
+    logger->debug("length {}", item_prob.size());
+    // boost::random::discrete_distribution<> dist(item_prob);
     for (uint i = 0; i < ngoals; i++) {
-      goals_list[group].push_back(cargo_vertices[group][dist(randomSeed)]);
+      goals_list[group].push_back(cargo_vertices[group][0]);
     }
   }
+
+  logger->debug("Group {} goals {}", group, goals_list[group]);
 }
 
 Vertex* Graph::get_next_goal(int group) {
