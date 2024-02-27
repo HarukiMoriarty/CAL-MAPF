@@ -168,6 +168,28 @@ int main(int argc, char* argv[])
 
     // failure
     if (solution.empty()) {
+      std::ofstream file(output_csv_name, std::ios::app);
+
+      if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << output_csv_name << std::endl;
+        return 1;
+      }
+
+      file << map_name << ","
+        << cache << ","
+        << gg << ","
+        << ngoals << ","
+        << nagents << ","
+        << seed << ","
+        << verbose << ","
+        << time_limit_sec << ","
+        << goals_m << ","
+        << goals_k << ","
+        << "fail to solve"
+        << std::endl;
+
+      file.close();
+
       console->error("failed to solve");
       return 1;
     }
@@ -211,7 +233,7 @@ int main(int argc, char* argv[])
   else {
     console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", ngoals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
-  log.make_life_long_log(ins, seed);
+  // log.make_life_long_log(ins, seed);
 
 
   std::ofstream file(output_csv_name, std::ios::app);
