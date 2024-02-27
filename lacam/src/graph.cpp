@@ -416,7 +416,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, int group, 
     std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group].size());
     boost::random::discrete_distribution<> dist(item_prob);
     for (uint i = 0; i < ngoals; i++) {
-      goals_list[group].push_back(cargo_vertices[group][0]);
+      goals_list[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
     }
   }
 
