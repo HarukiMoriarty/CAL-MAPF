@@ -1,4 +1,4 @@
-map: ["assets/warehouse/with_cache/warehouse-51-78-multi_port.map", "assets/warehouse/with_cache/warehouse-51-78-single_port.map"]
+map: ["assets/warehouse/with_cache/warehouse-51-78-80-960-multi_port.map", "assets/warehouse/with_cache/warehouse-51-78-80-960-single_port.map", "assets/warehouse/with_cache/warehouse-51-78-80-1600-multi_port.map", "assets/warehouse/with_cache/warehouse-51-78-80-1600-single_port.map"]
 cache: ["LRU", "FIFO", "RANDOM"]
 ngoals: [1000]
 gg: ["Zhang"]

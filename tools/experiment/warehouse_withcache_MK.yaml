@@ -1,9 +1,9 @@
-map: ["assets/warehouse/with_cache/warehouse-51-78-multi_port.map", "assets/warehouse/with_cache/warehouse-51-78-single_port.map"]
+map: ["assets/warehouse/with_cache/warehouse-51-78-80-960-multi_port.map", "assets/warehouse/with_cache/warehouse-51-78-80-960-single_port.map", "assets/warehouse/with_cache/warehouse-51-78-80-1600-multi_port.map", "assets/warehouse/with_cache/warehouse-51-78-80-1600-single_port.map"]
 cache: ["LRU", "FIFO", "RANDOM"]
 ngoals: [1000]
 gg: ["MK"]
-goals_k: [1, 2, 4, 8, 16, 32, 64, 99]
-goals_m: [100]
+goals_k: [1, 20, 40, 80, 120, 160]
+goals_m: [200]
 nagents: [4, 8, 16, 32, 64]
 seed: 0
 time_limit_sec: 10
