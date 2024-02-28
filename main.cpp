@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
   program.add_argument("-t", "--time_limit_sec").help("time limit sec").default_value(std::string("10"));                                       // time limit (second)
   program.add_argument("-o", "--output_step_result").help("step result output file").default_value(std::string("./result/step_result.txt"));    // output file
   program.add_argument("-c", "--output_csv_result").help("csv output file").default_value(std::string("./result/result.csv"));
+  program.add_argument("-th", "--output_throughput_result").help("throughput output file").default_value(std::string("./result/throughput.csv"));
   program.add_argument("-l", "--log_short").default_value(false).implicit_value(true);
   program.add_argument("-d", "--debug").help("enable debug logging").default_value(false).implicit_value(true);                                 // debug mode
 
@@ -43,6 +44,7 @@ int main(int argc, char* argv[])
   const auto cache = program.get<std::string>("cache");
   const auto output_step_name = program.get<std::string>("output_step_result");
   const auto output_csv_name = program.get<std::string>("output_csv_result");
+  const auto output_throughput_name = program.get<std::string>("output_throughput_result");
   const auto log_short = program.get<bool>("log_short");
   const auto ngoals = std::stoi(program.get<std::string>("ngoals"));
   const auto gg = program.get<std::string>("goals_generation");
@@ -121,12 +123,30 @@ int main(int argc, char* argv[])
   // initliaze info timer
   auto timer = std::chrono::steady_clock::now();
 
+  // prepare for throughput record
+  std::ofstream throughput_file(output_throughput_name, std::ios::app);
+  if (!throughput_file.is_open()) {
+    std::cerr << "Failed to open file: " << output_throughput_name << std::endl;
+    return 1;
+  }
+  throughput_file << map_name << ","
+    << cache << ","
+    << gg << ","
+    << ngoals << ","
+    << nagents << ","
+    << seed << ","
+    << verbose << ","
+    << time_limit_sec << ","
+    << goals_m << ","
+    << goals_k << ",";
+
   // solving
   uint nagents_with_new_goals = 0;
   uint makespan = 1;
   uint cache_hit = 0;
   uint cache_access = 0;
   uint batch_idx = 0;
+  uint throughput_index_cnt = 0;
   for (int i = 0; i < ngoals; i += nagents_with_new_goals) {
     batch_idx++;
     // info output
@@ -152,6 +172,11 @@ int main(int argc, char* argv[])
       timer = std::chrono::steady_clock::now();
     }
 
+    double throughput = double(i) / double(makespan);
+    for (throughput_index_cnt; throughput_index_cnt < makespan; throughput_index_cnt += 200) {
+      throughput_file << throughput << ",";
+    }
+
     // ternimal log
     console->debug(
       "----------------------------------------------------------------------"
@@ -168,14 +193,14 @@ int main(int argc, char* argv[])
 
     // failure
     if (solution.empty()) {
-      std::ofstream file(output_csv_name, std::ios::app);
+      std::ofstream csv_file(output_csv_name, std::ios::app);
 
-      if (!file.is_open()) {
+      if (!csv_file.is_open()) {
         std::cerr << "Failed to open file: " << output_csv_name << std::endl;
         return 1;
       }
 
-      file << map_name << ","
+      csv_file << map_name << ","
         << cache << ","
         << gg << ","
         << ngoals << ","
@@ -188,7 +213,7 @@ int main(int argc, char* argv[])
         << "fail to solve"
         << std::endl;
 
-      file.close();
+      csv_file.close();
 
       console->error("failed to solve");
       return 1;
@@ -236,14 +261,14 @@ int main(int argc, char* argv[])
   // log.make_life_long_log(ins, seed);
 
 
-  std::ofstream file(output_csv_name, std::ios::app);
+  std::ofstream csv_file(output_csv_name, std::ios::app);
 
-  if (!file.is_open()) {
+  if (!csv_file.is_open()) {
     std::cerr << "Failed to open file: " << output_csv_name << std::endl;
     return 1;
   }
 
-  file << map_name << ","
+  csv_file << map_name << ","
     << cache << ","
     << gg << ","
     << ngoals << ","
@@ -260,7 +285,11 @@ int main(int argc, char* argv[])
     << step_percentiles[6]
     << std::endl;
 
-  file.close();
+  csv_file.close();
+
+  double total_throughput = double(ngoals) / double(makespan);
+  throughput_file << total_throughput << std::endl;
+  throughput_file.close();
 
   return 0;
 }
