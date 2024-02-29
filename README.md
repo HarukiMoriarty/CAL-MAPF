@@ -1,4 +1,4 @@
-A cache approach in warehouse based on LACAM algorithm
+CAL-MAPF, a caching approach in the warehouse based on the LACAM algorithm in Lifelong Muli-Agent Path Finding
 
 ## Building
 
@@ -7,7 +7,7 @@ All you need is [CMake](https://cmake.org/) (≥v3.16). The code is written in C
 First, clone this repo with submodules.
 
 ```sh
-git clone --recursive https://github.com/HarukiMoriarty/lacam-test.git
+git clone --recursive https://github.com/HarukiMoriarty/CAL-MAPF.git
 cd lacam
 ```
 Then, build the project.
@@ -18,6 +18,6 @@ cmake -B build && make -C build
 
 ## Assumption
 
-1. Assume cargoes in warehouse is infinite
-2. Assume agents can bring infinite cargos back to cache
-3. Assume cargoes which evicted from cache can immediately disappear
+1. Assume cargo in the warehouse is infinite
+2. Assume agents can bring infinite cargos back to the cache
+3. Assume cargoes that are evicted from the cache can immediately disappear
