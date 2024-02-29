@@ -25,6 +25,7 @@ class ExperimentParameters(TypedDict):
     time_limit_sec: int  # Assuming a single value for simplicity, modify as needed.
     output_step_result: str
     output_csv_result: str
+    output_throughput_result: str
     log_short: bool
     debug: bool
 
@@ -43,7 +44,30 @@ def generate_combinations(params: ExperimentParameters):
     for combination in itertools.product(*values):
         yield dict(zip(keys, combination))
 
-def run_experiment(params: ExperimentParameters, dry_run: bool = False):
+def check_and_create_csv(output_csv_path: str):
+    # Convert string path to Path object for easier handling
+    csv_path = Path(output_csv_path)
+    if not csv_path.exists():
+        # Ensure the directory exists
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        # Create the file and write the header
+        with open(csv_path, 'w') as csv_file:
+            csv_file.write("map_name,cache,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k,cache_hit_rate,makespan,p0_steps,p50_steps,p99steps\n")
+
+def check_and_create_throughput(output_throughput_path: str):
+    # Convert string path to Path object for easier handling
+    throughput_path = Path(output_throughput_path)
+    if not throughput_path.exists():
+        # Ensure the directory exists
+        throughput_path.parent.mkdir(parents=True, exist_ok=True)
+        # Create the file and write the header
+        with open(throughput_path, 'w') as csv_file:
+            csv_file.write("map_name,cache,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k\n")
+
+def run_experiment(params: ExperimentParameters):
+    check_and_create_csv(params.get("output_csv_result", "./result/result.csv"))
+    check_and_create_throughput(params.get("output_throughput_result", "./result/throughput.csv"))
+
     cmd_base = [
         "./build/main",
         "--map", params["map"],
@@ -56,23 +80,20 @@ def run_experiment(params: ExperimentParameters, dry_run: bool = False):
         "--seed", str(params.get("seed", 0)),
         "--time_limit_sec", str(params.get("time_limit_sec", 10)),
         "--output_step_result", params.get("output_step_result", "./result/step_result.txt"),
-        "--output_csv_result", params.get("output_csv_result", "./result/result.csv")
+        "--output_csv_result", params.get("output_csv_result", "./result/result.csv"),
+        "--output_throughput_result", params.get("output_throughput_result", "./result/throughput.csv")
     ]
     if params.get("log_short", False):
         cmd_base.append("--log_short")
     if params.get("debug", False):
         cmd_base.append("--debug")
 
-    if dry_run:
-        LOG.info(f"Dry run command: {' '.join(cmd_base)}")
-    else:
-        LOG.info(f"Executing: {' '.join(cmd_base)}")
-        subprocess.run(cmd_base, check=True)
+    LOG.info(f"Executing: {' '.join(cmd_base)}")
+    subprocess.run(cmd_base, check=True)
 
 def main():
     parser = argparse.ArgumentParser(description="Run lacam experiments with different parameters.")
     parser.add_argument("experiment", help="Experiment name to run.")
-    parser.add_argument("--dry-run", action="store_true", help="Perform a dry run without executing commands.")
     args = parser.parse_args()
 
     exp_params = load_experiment(args.experiment)
@@ -81,7 +102,7 @@ def main():
 
     for combination in generate_combinations(exp_params):
         try:
-            run_experiment(combination, args.dry_run)
+            run_experiment(combination)
         except subprocess.CalledProcessError as e:
             LOG.error(f"Experiment failed with error: {e}")
 

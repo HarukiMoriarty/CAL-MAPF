@@ -8,7 +8,8 @@ nagents: [4, 8, 16, 32, 64]
 seed: 0
 time_limit_sec: 10
 output_step_result: "./result/step_result.txt"
-output_csv_result: "./result/result.csv"
+output_csv_result: "./result/result_Zhang.csv"
+output_throughput_result: "./result/throughput_Zhang.csv"
 log_short: false
 debug: false
 
