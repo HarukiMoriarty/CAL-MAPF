@@ -1,4 +1,4 @@
-#include <lacam.hpp>
+#include <calmapf.hpp>
 #include "gtest/gtest.h"
 
 TEST(Graph, single_port_load_graph)

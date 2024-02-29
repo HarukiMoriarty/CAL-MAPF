@@ -1,4 +1,4 @@
-#include <lacam.hpp>
+#include <calmapf.hpp>
 #include "gtest/gtest.h"
 
 TEST(Cache, cache_LRU_single_port_test)
