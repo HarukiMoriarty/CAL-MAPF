@@ -8,9 +8,16 @@ First, clone this repo with submodules.
 
 ```sh
 git clone --recursive https://github.com/HarukiMoriarty/CAL-MAPF.git
-cd lacam
+cd CAL-MAPF
 ```
-Then, build the project.
+Then, install dependencies
+
+```sh
+sudo apt-get update
+sudo apt-get install -y libspdlog-dev libfmt-dev libboost-all-dev
+```
+
+Last, build the project.
 
 ```sh
 cmake -B build && make -C build
