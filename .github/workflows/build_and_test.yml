@@ -1,14 +1,10 @@
-name: CI
+name: Build and test
 
 on:
   push:
-    branches:
-      - dev
-    paths:
-      - 'lacam/**'
-      - 'tests/**'
-      - 'main.cpp'
-      - '.github/**'
+    branches: ["dev"]
+  pull_request:
+    branches: ["dev"]
 
 jobs:
   ci:

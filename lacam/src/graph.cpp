@@ -143,7 +143,7 @@ Graph::Graph(
         cache->node_coming_cargo.push_back(tmp_cache_node);
         cache->bit_cache_get_lock.emplace_back(tmp_cache_node.size(), 0);
         cache->bit_cache_insert_lock.emplace_back(tmp_cache_node.size(), 0);
-        cache->is_empty.emplace_back(tmp_cache_node.size(), false);
+        cache->is_empty.emplace_back(tmp_cache_node.size(), true);
         switch (cache_type) {
         case CacheType::LRU:
           cache->LRU.emplace_back(tmp_cache_node.size(), 0);

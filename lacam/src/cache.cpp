@@ -43,9 +43,10 @@ int Cache::_get_cache_evited_policy_index(const uint group) {
     // RANDOM paras
     int index = -1;
     std::vector<uint> candidate;
+
     switch (cache_type) {
     case CacheType::LRU:
-        for (uint i = 0; i < LRU.size(); i++) {
+        for (uint i = 0; i < LRU[group].size(); i++) {
             // If it's not locked and (it's the first element or the smallest so far)
             if (bit_cache_insert_lock[group][i] == 0 && bit_cache_get_lock[group][i] == 0 && (min_value == -1 || LRU[group][i] < min_value)) {
                 min_value = LRU[group][i];
@@ -54,7 +55,7 @@ int Cache::_get_cache_evited_policy_index(const uint group) {
         }
         return min_index;
     case CacheType::FIFO:
-        for (uint i = 0; i < FIFO.size(); i++) {
+        for (uint i = 0; i < FIFO[group].size(); i++) {
             // If it's not blocked and (it's the first element or the smallest so far)
             if (bit_cache_insert_lock[group][i] == 0 && bit_cache_get_lock[group][i] == 0 && (min_value == -1 || FIFO[group][i] < min_value)) {
                 min_value = FIFO[group][i];
@@ -63,7 +64,7 @@ int Cache::_get_cache_evited_policy_index(const uint group) {
         }
         return min_index;
     case CacheType::RANDOM:
-        for (uint i = 0; i < node_id.size(); i++) {
+        for (uint i = 0; i < node_id[group].size(); i++) {
             // If it's not blocked
             if (bit_cache_insert_lock[group][i] == 0 && bit_cache_get_lock[group][i] == 0) {
                 candidate.push_back(i);
@@ -149,7 +150,7 @@ Vertex* Cache::try_insert_cache(Vertex* cargo, std::vector<Vertex*> port_list) {
     // Second try to find a empty position to insert cargo
     // TODO: optimization, can set a flag to skip this
     for (uint i = 0; i < is_empty[group].size(); i++) {
-        if (!is_empty[group][i]) {
+        if (is_empty[group][i]) {
             logger->debug("Find an empty cache block with index {} {}", i, *node_id[group][i]);
             // We lock this position and update LRU info
             bit_cache_insert_lock[group][i] += 1;
@@ -158,7 +159,7 @@ Vertex* Cache::try_insert_cache(Vertex* cargo, std::vector<Vertex*> port_list) {
             // Update cache evited policy statistics
             _update_cache_evited_policy_statistics(group, i, true);
             // Set the position to be used
-            is_empty[group][i] = true;
+            is_empty[group][i] = false;
             return node_id[group][i];
         }
     }

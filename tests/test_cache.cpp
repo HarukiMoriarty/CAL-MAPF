@@ -55,6 +55,12 @@ TEST(Cache, cache_LRU_single_port_test)
     tmp_cache_node_id.push_back(cache_3);
     cache.node_id.push_back(tmp_cache_node_id);
 
+    std::vector<bool> tmp_cache_is_empty;
+    tmp_cache_is_empty.push_back(false);
+    tmp_cache_is_empty.push_back(false);
+    tmp_cache_is_empty.push_back(false);
+    cache.is_empty.push_back(tmp_cache_is_empty);
+
     std::vector<int> tmp_cache_lru;
     tmp_cache_lru.push_back(3);
     tmp_cache_lru.push_back(2);
@@ -163,6 +169,12 @@ TEST(Cache, cache_FIFO_single_port_test)
     tmp_cache_node_id.push_back(cache_2);
     tmp_cache_node_id.push_back(cache_3);
     cache.node_id.push_back(tmp_cache_node_id);
+
+    std::vector<bool> tmp_cache_is_empty;
+    tmp_cache_is_empty.push_back(false);
+    tmp_cache_is_empty.push_back(false);
+    tmp_cache_is_empty.push_back(false);
+    cache.is_empty.push_back(tmp_cache_is_empty);
 
     std::vector<int> tmp_cache_fifo;
     tmp_cache_fifo.push_back(3);
