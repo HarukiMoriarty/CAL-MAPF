@@ -24,6 +24,11 @@ jobs:
         with:
           repository: p-ranav/argparse
           path: third_party/argparse
+      - name: submodule setup for spdlog
+        uses: actions/checkout@v2
+        with:
+            repository: gabime/spdlog
+            path: third_party/spdlog
       - name: build
         run: cmake -B build && make -C build
       - name: test
