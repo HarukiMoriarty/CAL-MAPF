@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libspdlog-dev libfmt-dev
+          sudo apt-get install -y libspdlog-dev libfmt-dev libboost-all-dev
       - name: build
         run: cmake -B build && make -C build
       - name: test
