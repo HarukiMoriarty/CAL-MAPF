@@ -4,11 +4,12 @@
 TEST(Graph, single_port_load_graph)
 {
   const std::string filename = "./assets/test/test-8-8-single_port.map";
+  const std::string goal_real_file_path = "./data/order_data.csv";
   auto test = spdlog::stderr_color_mt("test_single_port");
   auto MT = std::mt19937(0);
   test->set_level(spdlog::level::debug);
 
-  auto G = Graph(filename, test, GoalGenerationType::MK, 10, 5, 10, CacheType::LRU, &MT);
+  auto G = Graph(filename, test, GoalGenerationType::MK, goal_real_file_path, 10, 5, 10, CacheType::LRU, &MT);
 
   // Test graph paras
   ASSERT_EQ(G.size(), 36);
@@ -49,11 +50,12 @@ TEST(Graph, single_port_load_graph)
 TEST(Graph, multi_port_load_graph)
 {
   const std::string filename = "./assets/test/test-16-16-multi_port.map";
+  const std::string goal_real_file_path = "./data/order_data.csv";
   auto test = spdlog::stderr_color_mt("test_multi_port");
   auto MT = std::mt19937(0);
   test->set_level(spdlog::level::debug);
 
-  auto G = Graph(filename, test, GoalGenerationType::MK, 10, 5, 10, CacheType::LRU, &MT);
+  auto G = Graph(filename, test, GoalGenerationType::MK, goal_real_file_path, 10, 5, 10, CacheType::LRU, &MT);
 
   // Test graph paras
   ASSERT_EQ(G.size(), 196);

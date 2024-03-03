@@ -39,6 +39,51 @@ std::vector<double> calculate_probabilities(int n) {
 
   return probabilities;
 }
+
+// This is a general function that loads teh data file and compute the frequency of each product.
+// The frequencies will be used to generate a sequence of products.
+// The probability vector: prob_v[product_id] = frequency (0 if product_id never appears in the data).
+std::vector<float> compute_frequency_from_file(std::string file_path) {
+  int total = 0;
+  int n_line = 0;
+  int largest_idx = 0;
+  std::string line;
+  std::map<int, float> product_frequency;
+  std::vector<float> prob_v;
+
+  std::ifstream file(file_path);
+  if (!file.is_open()) {
+    std::cerr << "Failed to open data file." << std::endl;
+    return prob_v;
+  }
+
+  while (getline(file, line)) {
+    if (n_line == 0) {
+      n_line++;
+      continue;
+    }
+    std::stringstream ss(line);
+    std::string field;
+    getline(ss, field, ',');    // get the first element in each row (the product id).
+    int product_id = stoi(field);
+    product_frequency[product_id]++;
+    if (product_id > largest_idx) {
+      largest_idx = product_id;
+    }
+    total++;
+    n_line++;
+  }
+
+  for (auto it = product_frequency.begin(); it != product_frequency.end(); it++) {
+    it->second = it->second / total;
+  }
+
+  for (int i = 0;i <= largest_idx;i++) {
+    prob_v.push_back(product_frequency[i]);
+  }
+
+  return prob_v;
+}
 /* Help function end*/
 
 
@@ -74,6 +119,7 @@ Graph::Graph(
   const std::string& filename,
   std::shared_ptr<spdlog::logger> _logger,
   GoalGenerationType goal_generation_type,
+  std::string goal_real_file,
   uint goals_m,
   uint goals_k,
   uint ngoals,
@@ -348,7 +394,7 @@ Graph::Graph(
   logger->info("Generating goals...");
 
   for (int i = 0; i < group; i++) {
-    fill_goals_list(goal_generation_type, i, goals_m, goals_k, ngoals);
+    fill_goals_list(goal_generation_type, goal_real_file, i, goals_m, goals_k, ngoals);
   }
 }
 
@@ -364,7 +410,7 @@ Vertex* Graph::random_target_vertex(int group) {
   return *it;
 }
 
-void Graph::fill_goals_list(GoalGenerationType goal_generation_type, int group, uint goals_m, uint goals_k, uint ngoals) {
+void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string goal_real_file, int group, uint goals_m, uint goals_k, uint ngoals) {
   if (goal_generation_type == GoalGenerationType::MK) {
     std::deque<Vertex*> sliding_window;
     std::unordered_map<Vertex*, int> goal_count;
@@ -414,6 +460,13 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, int group, 
   else if (goal_generation_type == GoalGenerationType::Zhang) {
     std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group].size());
     boost::random::discrete_distribution<> dist(item_prob);
+    for (uint i = 0; i < ngoals; i++) {
+      goals_list[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
+    }
+  }
+  else if (goal_generation_type == GoalGenerationType::Real) {
+    std::vector<float> prob_v = compute_frequency_from_file(goal_real_file);
+    boost::random::discrete_distribution<> dist(prob_v);
     for (uint i = 0; i < ngoals; i++) {
       goals_list[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
     }

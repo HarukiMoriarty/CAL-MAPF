@@ -1,4 +1,4 @@
-map: ["assets/warehouse/without_cache/warehouse-51-78-960-multi_port.map", "assets/warehouse/without_cache/warehouse-51-78-960-single_port.map", "assets/warehouse/without_cache/warehouse-51-78-1600-multi_port.map", "assets/warehouse/without_cache/warehouse-51-78-1600-single_port.map"]
+map: ["assets/warehouse/without_cache/warehouse-51-78-1600-multi_port.map", "assets/warehouse/without_cache/warehouse-51-78-1600-single_port.map"]
 cache: ["NONE"]
 ngoals: [1000]
 gg: ["MK"]
