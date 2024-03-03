@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
   program.add_argument("-m", "--map").help("map file").required();                                                                              // map file
   program.add_argument("-ca", "--cache").help("cache type: NONE, LRU, FIFO, RANDOM").default_value(std::string("NONE"));                        // cache type                    
   program.add_argument("-ng", "--ngoals").help("number of goals").required();                                                                   // number of goals: agent first go to get goal, and then return to unloading port
-  program.add_argument("-gg", "--goals_generation").help("goals generation strategy: MK, Zhang, RD").required();                                // goals generation type
+  program.add_argument("-gg", "--goals_generation").help("goals generation strategy: MK, Zhang, Real").required();                                // goals generation type
   program.add_argument("-gk", "--goals-k").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
   program.add_argument("-gm", "--goals-m").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
   program.add_argument("-grf", "--goals-real-file").help("real distribution data file path").default_value(std::string("./data/order_data.csv"));
@@ -49,7 +49,6 @@ int main(int argc, char* argv[])
   const auto log_short = program.get<bool>("log_short");
   const auto ngoals = std::stoi(program.get<std::string>("ngoals"));
   const auto gg = program.get<std::string>("goals_generation");
-  console->info("ggggggggggg");
   const auto grf = program.get<std::string>("goals-real-file");
   const auto nagents = std::stoi(program.get<std::string>("nagents"));
   const auto debug = program.get<bool>("debug");
@@ -87,7 +86,7 @@ int main(int argc, char* argv[])
   else if (gg == "Zhang") {
     goal_generation_type = GoalGenerationType::Zhang;
   }
-  else if (gg == "RD") {
+  else if (gg == "Real") {
     goal_generation_type = GoalGenerationType::Real;
   }
   else {

@@ -466,6 +466,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
   }
   else if (goal_generation_type == GoalGenerationType::Real) {
     std::vector<float> prob_v = compute_frequency_from_file(goal_real_file);
+    prob_v.resize(cargo_vertices[group].size());
     boost::random::discrete_distribution<> dist(prob_v);
     for (uint i = 0; i < ngoals; i++) {
       goals_list[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
