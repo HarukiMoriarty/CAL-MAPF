@@ -69,7 +69,7 @@ def run_experiment(params: ExperimentParameters):
     check_and_create_throughput(params.get("output_throughput_result", "./result/throughput.csv"))
 
     cmd_base = [
-        "./build/main",
+        "./build/CAL-MAPF",
         "--map", params["map"],
         "--cache", params["cache"],
         "--ngoals", str(params["ngoals"]),
