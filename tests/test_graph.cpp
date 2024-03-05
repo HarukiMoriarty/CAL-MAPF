@@ -22,8 +22,8 @@ TEST(Graph, single_port_load_graph)
   ASSERT_EQ(G.cargo_vertices[0].size(), 3);
   ASSERT_EQ(G.cache->node_id.size(), 1);
   ASSERT_EQ(G.cache->node_id[0].size(), 3);
-  ASSERT_EQ(G.goals_list.size(), 1);
-  ASSERT_EQ(G.goals_list[0].size(), 10);
+  ASSERT_EQ(G.goals_queue.size(), 1);
+  ASSERT_EQ(G.goals_queue[0].size(), 10);
 
   // Test normal block
   ASSERT_EQ(G.V[0]->neighbor.size(), 2);
@@ -70,9 +70,9 @@ TEST(Graph, multi_port_load_graph)
   ASSERT_EQ(G.cache->node_id.size(), 2);
   ASSERT_EQ(G.cache->node_id[0].size(), 6);
   ASSERT_EQ(G.cache->node_id[1].size(), 4);
-  ASSERT_EQ(G.goals_list.size(), 2);
-  ASSERT_EQ(G.goals_list[0].size(), 10);
-  ASSERT_EQ(G.goals_list[1].size(), 10);
+  ASSERT_EQ(G.goals_queue.size(), 2);
+  ASSERT_EQ(G.goals_queue[0].size(), 10);
+  ASSERT_EQ(G.goals_queue[1].size(), 10);
 
   // Test normal block
   ASSERT_EQ(G.V[0]->neighbor.size(), 2);

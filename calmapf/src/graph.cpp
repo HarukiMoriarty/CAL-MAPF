@@ -164,8 +164,7 @@ Graph::Graph(
 
   U = Vertices(width * height, nullptr);
   int group_cnt = 0;
-  goals_list.resize(group);
-  goals_cnt.resize(group, 0);
+  goals_queue.resize(group);
 
   if (is_cache(cache_type)) {
     // Generate cache
@@ -417,7 +416,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
     std::unordered_set<Vertex*> diff_goals;
     uint goals_generated = 0;
 
-    while (goals_list[group].size() < ngoals) {
+    while (goals_queue[group].size() < ngoals) {
       if (goals_generated % 1000 == 0) {
         logger->info("Generated {:5}/{:5} goals.", goals_generated, ngoals);
       }
@@ -445,7 +444,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
       sliding_window.push_back(selected_goal);
       goal_count[selected_goal]++;
       diff_goals.insert(selected_goal);
-      goals_list[group].push_back(selected_goal);
+      goals_queue[group].push_back(selected_goal);
       goals_generated++;
     }
   }
@@ -461,7 +460,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
     std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group].size());
     boost::random::discrete_distribution<> dist(item_prob);
     for (uint i = 0; i < ngoals; i++) {
-      goals_list[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
+      goals_queue[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
     }
   }
   else if (goal_generation_type == GoalGenerationType::Real) {
@@ -469,24 +468,40 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
     prob_v.resize(cargo_vertices[group].size());
     boost::random::discrete_distribution<> dist(prob_v);
     for (uint i = 0; i < ngoals; i++) {
-      goals_list[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
+      goals_queue[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
     }
   }
 
-  logger->debug("Group {} goals {}", group, goals_list[group]);
+  logger->debug("Group {} goals {}", group, goals_queue[group].size());
 }
 
-Vertex* Graph::get_next_goal(int group) {
-  assert(!goals_list[group].empty());
-  // We should let each reaching unploading-port agent to be disappeared when the total
-  // number of goals has been assigned but yet finished. For now, we let it 
-  // out to have new random target. Let us know if this will cause any problem
-  if (goals_cnt[group] >= goals_list[group].size()) {
+Vertex* Graph::get_next_goal(int group, int look_ahead) {
+  // Check if the specific group's queue is empty
+  if (goals_queue[group].empty()) {
     return random_target_vertex(group);
   }
-  auto goal = goals_list[group][goals_cnt[group]];
-  goals_cnt[group]++;
-  return goal;
+
+  std::vector<Vertex*> temp_goals;
+  int size = std::min(look_ahead, static_cast<int>(goals_queue[group].size()));
+
+  // Directly look for cache hit without modifying the original deque
+  int cache_hit_index = 0;
+  for (int i = 0; i < size; ++i) {
+    Vertex* current_goal = goals_queue[group].front();
+    goals_queue[group].pop_front();
+    temp_goals.push_back(current_goal);
+
+    if (cache != nullptr && cache->look_ahead_cache(current_goal)) {
+      cache_hit_index = i;
+      break;
+    }
+  }
+
+  Vertex* selected_goal = temp_goals[cache_hit_index];
+  for (int i = 0; i < temp_goals.size(); i++) {
+    if (i != cache_hit_index) goals_queue[group].push_front(temp_goals[temp_goals.size() - i - 1]);
+  }
+  return selected_goal;
 }
 
 bool is_same_config(const Config& C1, const Config& C2)

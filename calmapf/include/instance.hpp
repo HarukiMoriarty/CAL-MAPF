@@ -27,6 +27,7 @@ struct Instance {
   const uint nagents;             // number of agents
   std::vector<int> agent_group;   // agents group
   const uint ngoals;              // number of goals
+  const int look_ahead;
 
   std::shared_ptr<spdlog::logger> logger;
 
@@ -38,6 +39,7 @@ struct Instance {
     GoalGenerationType goals_generation_type,
     std::string goal_real_file,
     CacheType cache_type,
+    int look_ahead = 1,
     const uint _nagents = 1,
     const uint _ngoals = 1,
     const uint goals_m = 0,

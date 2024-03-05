@@ -11,8 +11,9 @@ int main(int argc, char* argv[])
   argparse::ArgumentParser program("lacam", "0.1.0");
   program.add_argument("-m", "--map").help("map file").required();                                                                              // map file
   program.add_argument("-ca", "--cache").help("cache type: NONE, LRU, FIFO, RANDOM").default_value(std::string("NONE"));                        // cache type                    
+  program.add_argument("-la", "--look-ahead").help("look ahead number").default_value(std::string("1"));
   program.add_argument("-ng", "--ngoals").help("number of goals").required();                                                                   // number of goals: agent first go to get goal, and then return to unloading port
-  program.add_argument("-gg", "--goals_generation").help("goals generation strategy: MK, Zhang, Real").required();                                // goals generation type
+  program.add_argument("-gg", "--goals_generation").help("goals generation strategy: MK, Zhang, Real").required();                              // goals generation type
   program.add_argument("-gk", "--goals-k").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
   program.add_argument("-gm", "--goals-m").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
   program.add_argument("-grf", "--goals-real-file").help("real distribution data file path").default_value(std::string("./data/order_data.csv"));
@@ -43,6 +44,7 @@ int main(int argc, char* argv[])
   auto MT = std::mt19937(seed);
   const auto map_name = program.get<std::string>("map");
   const auto cache = program.get<std::string>("cache");
+  const auto look_ahead = std::stoi(program.get<std::string>("look-ahead"));
   const auto output_step_name = program.get<std::string>("output_step_result");
   const auto output_csv_name = program.get<std::string>("output_csv_result");
   const auto output_throughput_name = program.get<std::string>("output_throughput_result");
@@ -99,16 +101,24 @@ int main(int argc, char* argv[])
     console->error("number of goals must larger or equal to number of agents");
     return 1;
   }
+  if (look_ahead < 1) {
+    console->error("look ahead should be greater than 1");
+    return 1;
+  }
 
   // output arguments info
   console->info("Map file:         {}", map_name);
   console->info("Cache type:       {}", cache);
+  console->info("Look ahead:       {}", look_ahead);
   console->info("Number of goals:  {}", ngoals);
   console->info("Number of agents: {}", nagents);
   console->info("Goal Generation:  {}", gg);
   if (goal_generation_type == GoalGenerationType::MK) {
     console->info("Goals m:          {}", goals_m);
     console->info("Goals k:          {}", goals_k);
+  }
+  else if (goal_generation_type == GoalGenerationType::Real) {
+    console->info("Real dis file:    {}", grf);
   }
   console->info("Seed:             {}", seed);
   console->info("Verbose:          {}", verbose);
@@ -118,7 +128,7 @@ int main(int argc, char* argv[])
   console->info("Debug:            {}", debug);
 
   // generating instance
-  auto ins = Instance(map_name, &MT, console, goal_generation_type, grf, cache_type, nagents, ngoals, goals_m, goals_k);
+  auto ins = Instance(map_name, &MT, console, goal_generation_type, grf, cache_type, look_ahead, nagents, ngoals, goals_m, goals_k);
   if (!ins.is_valid(1)) {
     console->error("instance is invalid!");
     return 1;

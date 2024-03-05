@@ -61,12 +61,18 @@ struct Cache {
     int _get_cargo_in_cache_position(Vertex* cargo);
 
     /**
-     * @brief Check if a specific cargo is coming to cache
+     * @brief Check if a specific cargo is coming to cache.
      * @param cargo A pointer to the Vertex representing the cargo.
      * @return true if is coming to cacehe, or false.
     */
-
     bool _is_cargo_in_coming_cache(Vertex* cargo);
+
+    /**
+     * @brief Check if the cargo is in cache. Used for look ahead protocol.
+     * @param cargo A pointer to the Vertex representing the cargo.
+     * @return true if the cargo is in cache, or false.
+    */
+    bool look_ahead_cache(Vertex* cargo);
 
     /**
      * @brief Attempt to find a cached cargo and retrieve associated goals.

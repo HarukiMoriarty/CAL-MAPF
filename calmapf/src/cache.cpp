@@ -118,6 +118,12 @@ bool Cache::_is_cargo_in_coming_cache(Vertex* cargo) {
     return false;
 }
 
+bool Cache::look_ahead_cache(Vertex* cargo) {
+    int cache_index = _get_cargo_in_cache_position(cargo);
+    if (cache_index != -1 && bit_cache_insert_lock[cargo->group][cache_index] == 0) return true;
+    return false;
+}
+
 Vertex* Cache::try_cache_cargo(Vertex* cargo) {
     int cache_index = _get_cargo_in_cache_position(cargo);
 

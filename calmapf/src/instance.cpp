@@ -7,6 +7,7 @@ Instance::Instance(
   GoalGenerationType goal_generation_type,
   std::string goal_real_file,
   CacheType cache_type,
+  int _look_ahead,
   const uint _nagents,
   const uint _ngoals,
   const uint goals_m,
@@ -16,6 +17,7 @@ Instance::Instance(
   goals(Config()),
   nagents(_nagents),
   ngoals(_ngoals),
+  look_ahead(_look_ahead),
   logger(std::move(_logger))
 {
   const auto K = graph.size();
@@ -50,7 +52,7 @@ Instance::Instance(
 bool Instance::is_valid(const int verbose) const
 {
   if (nagents != starts.size() || nagents != goals.size()) {
-    info(1, verbose, "invalid N, check instance");
+    logger->error("invalid N, check instance nagents {} starts {} goals {}", nagents, starts.size(), goals.size());
     return false;
   }
   return true;
@@ -170,7 +172,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         logger->debug("Agent {} has bring cargo {} to unloading port", j, *cargo_goals[j]);
 
         // Generate new cargo goal
-        Vertex* cargo = graph.get_next_goal(agent_group[j]);
+        Vertex* cargo = graph.get_next_goal(agent_group[j], look_ahead);
         cargo_goals[j] = cargo;
         Vertex* goal = graph.cache->try_cache_cargo(cargo);
 
@@ -231,7 +233,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         logger->debug("Agent {} has bring cargo {} to unloading port", j, *cargo_goals[j]);
 
         // Generate new cargo goal
-        Vertex* cargo = graph.get_next_goal(agent_group[j]);
+        Vertex* cargo = graph.get_next_goal(agent_group[j], look_ahead);
         cargo_goals[j] = cargo;
         Vertex* goal = graph.cache->try_cache_cargo(cargo);
 

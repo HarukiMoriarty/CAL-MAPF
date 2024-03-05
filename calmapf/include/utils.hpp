@@ -11,6 +11,7 @@
 #include <iostream>
 #include <numeric>
 #include <queue>
+#include <deque>
 #include <random>
 #include <regex>
 #include <stack>
@@ -82,6 +83,7 @@ struct Vertex {
 
 // Locations for all agents
 using Vertices = std::vector<Vertex*>;
+using Goals = std::deque<Vertex*>;
 using Config = std::vector<Vertex*>;
 // Solution: a sequence of configurations
 using Solution = std::vector<Config>;
