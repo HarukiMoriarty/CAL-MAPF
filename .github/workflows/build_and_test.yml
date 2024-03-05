@@ -7,28 +7,28 @@ on:
     branches: ["dev"]
 
 jobs:
-  ci:
+  build_and_test:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: false
-      - name: submodule setup for google test
+      - name: ⚙️ submodule setup for google test
         uses: actions/checkout@v3
         with:
           repository: google/googletest
           path: third_party/googletest
-      - name: submodule setup for argparse
+      - name: ⚙️ submodule setup for argparse
         uses: actions/checkout@v3
         with:
           repository: p-ranav/argparse
           path: third_party/argparse
-      - name: Install dependencies
+      - name: ⚙️ Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libspdlog-dev libfmt-dev libboost-all-dev
-      - name: build
+      - name: 🔨 build
         run: cmake -B build && make -C build
-      - name: test
+      - name: 🔎 test
         run: ./build/test_all

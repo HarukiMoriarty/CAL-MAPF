@@ -484,7 +484,6 @@ Vertex* Graph::get_next_goal(int group, int look_ahead) {
   std::vector<Vertex*> temp_goals;
   int size = std::min(look_ahead, static_cast<int>(goals_queue[group].size()));
 
-  // Directly look for cache hit without modifying the original deque
   int cache_hit_index = 0;
   for (int i = 0; i < size; ++i) {
     Vertex* current_goal = goals_queue[group].front();
