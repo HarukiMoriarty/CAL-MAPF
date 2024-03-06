@@ -9,7 +9,7 @@ TEST(Graph, single_port_load_graph)
   auto MT = std::mt19937(0);
   test->set_level(spdlog::level::debug);
 
-  auto G = Graph(filename, test, GoalGenerationType::MK, goal_real_file_path, 10, 5, 10, CacheType::LRU, &MT);
+  auto G = Graph(filename, test, GoalGenerationType::MK, goal_real_file_path, 10, 5, 10, CacheType::LRU, 10, &MT);
 
   // Test graph paras
   ASSERT_EQ(G.size(), 36);
@@ -55,7 +55,7 @@ TEST(Graph, multi_port_load_graph)
   auto MT = std::mt19937(0);
   test->set_level(spdlog::level::debug);
 
-  auto G = Graph(filename, test, GoalGenerationType::MK, goal_real_file_path, 10, 5, 10, CacheType::LRU, &MT);
+  auto G = Graph(filename, test, GoalGenerationType::MK, goal_real_file_path, 10, 5, 10, CacheType::LRU, 10, &MT);
 
   // Test graph paras
   ASSERT_EQ(G.size(), 196);

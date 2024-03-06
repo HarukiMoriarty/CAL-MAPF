@@ -124,8 +124,10 @@ Graph::Graph(
   uint goals_k,
   uint ngoals,
   CacheType cache_type,
+  int _delay_deadline,
   std::mt19937* _randomSeed) :
   V(Vertices()),
+  delay_deadline(_delay_deadline),
   width(0),
   height(0),
   randomSeed(_randomSeed),
@@ -499,7 +501,7 @@ Vertex* Graph::get_next_goal(int group, int look_ahead) {
     temp_goals.push_back(current_goal);
     temp_goals_delay.push_back(current_goal_delay);
 
-    if (cache != nullptr && (cache->look_ahead_cache(current_goal) || current_goal_delay >= look_ahead)) {
+    if (cache != nullptr && (cache->look_ahead_cache(current_goal) || current_goal_delay >= delay_deadline)) {
       cache_hit_index = i;
       break;
     }

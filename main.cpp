@@ -12,6 +12,7 @@ int main(int argc, char* argv[])
   program.add_argument("-m", "--map").help("map file").required();                                                                              // map file
   program.add_argument("-ca", "--cache").help("cache type: NONE, LRU, FIFO, RANDOM").default_value(std::string("NONE"));                        // cache type                    
   program.add_argument("-la", "--look-ahead").help("look ahead number").default_value(std::string("1"));
+  program.add_argument("-dd", "--delay-deadline").help("look ahead paras: a task must be assigned over delay deadline").default_value(std::string("1"));
   program.add_argument("-ng", "--ngoals").help("number of goals").required();                                                                   // number of goals: agent first go to get goal, and then return to unloading port
   program.add_argument("-gg", "--goals_generation").help("goals generation strategy: MK, Zhang, Real").required();                              // goals generation type
   program.add_argument("-gk", "--goals-k").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
@@ -45,6 +46,7 @@ int main(int argc, char* argv[])
   const auto map_name = program.get<std::string>("map");
   const auto cache = program.get<std::string>("cache");
   const auto look_ahead = std::stoi(program.get<std::string>("look-ahead"));
+  const auto delay_deadline = std::stoi(program.get<std::string>("delay-deadline"));
   const auto output_step_name = program.get<std::string>("output_step_result");
   const auto output_csv_name = program.get<std::string>("output_csv_result");
   const auto output_throughput_name = program.get<std::string>("output_throughput_result");
@@ -128,7 +130,7 @@ int main(int argc, char* argv[])
   console->info("Debug:            {}", debug);
 
   // generating instance
-  auto ins = Instance(map_name, &MT, console, goal_generation_type, grf, cache_type, look_ahead, nagents, ngoals, goals_m, goals_k);
+  auto ins = Instance(map_name, &MT, console, goal_generation_type, grf, cache_type, look_ahead, delay_deadline, nagents, ngoals, goals_m, goals_k);
   if (!ins.is_valid(1)) {
     console->error("instance is invalid!");
     return 1;
@@ -189,7 +191,7 @@ int main(int argc, char* argv[])
     }
 
     double throughput = double(i) / double(makespan);
-    for (throughput_index_cnt; throughput_index_cnt < makespan; throughput_index_cnt += 200) {
+    for (; throughput_index_cnt < makespan; throughput_index_cnt += 200) {
       throughput_file << throughput << ",";
     }
 

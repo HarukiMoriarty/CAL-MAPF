@@ -40,6 +40,7 @@ struct Instance {
     std::string goal_real_file,
     CacheType cache_type,
     int look_ahead = 1,
+    int delay_deadline = 1,
     const uint _nagents = 1,
     const uint _ngoals = 1,
     const uint goals_m = 0,

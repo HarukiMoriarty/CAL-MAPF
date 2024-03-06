@@ -8,11 +8,12 @@ Instance::Instance(
   std::string goal_real_file,
   CacheType cache_type,
   int _look_ahead,
+  int delay_deadline,
   const uint _nagents,
   const uint _ngoals,
   const uint goals_m,
   const uint goals_k)
-  : graph(Graph(map_filename, _logger, goal_generation_type, goal_real_file, goals_m, goals_k, _ngoals, cache_type, MT)),
+  : graph(Graph(map_filename, _logger, goal_generation_type, goal_real_file, goals_m, goals_k, _ngoals, cache_type, delay_deadline, MT)),
   starts(Config()),
   goals(Config()),
   nagents(_nagents),
