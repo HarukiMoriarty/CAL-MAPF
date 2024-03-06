@@ -22,17 +22,18 @@ enum class GoalGenerationType {
 };
 
 struct Graph {
-  Vertices V;                             // without nullptr
-  Vertices U;                             // with nullptr, i.e., |U| = width * height
-  Vertices unloading_ports;               // unloading port
-  Cache* cache;                           // cache
+  Vertices V;                                 // without nullptr
+  Vertices U;                                 // with nullptr, i.e., |U| = width * height
+  Vertices unloading_ports;                   // unloading port
+  Cache* cache;                               // cache
   std::vector<Vertices> cargo_vertices;
-  std::vector<Goals> goals_queue;         // goals queue: length [ngoals], maximum [k] different goals in any [m] length sublist 
+  std::vector<Goals> goals_queue;             // goals queue: length [ngoals], maximum [k] different goals in any [m] length sublist 
+  std::vector<std::deque<int>> goals_delay;   // goals delay: prevent cargos is delayed by look ahead 
 
-  int width;                              // grid width
-  int height;                             // grid height
-  int group;                              // group number
-  GraphType type;                         // graph type
+  int width;                                  // grid width
+  int height;                                 // grid height
+  int group;                                  // group number
+  GraphType type;                             // graph type
   std::mt19937* randomSeed;
 
   std::shared_ptr<spdlog::logger> logger;

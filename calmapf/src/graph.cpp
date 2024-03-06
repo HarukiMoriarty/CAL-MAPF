@@ -165,6 +165,7 @@ Graph::Graph(
   U = Vertices(width * height, nullptr);
   int group_cnt = 0;
   goals_queue.resize(group);
+  goals_delay.resize(group);
 
   if (is_cache(cache_type)) {
     // Generate cache
@@ -445,6 +446,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
       goal_count[selected_goal]++;
       diff_goals.insert(selected_goal);
       goals_queue[group].push_back(selected_goal);
+      goals_delay[group].push_back(0);
       goals_generated++;
     }
   }
@@ -461,6 +463,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
     boost::random::discrete_distribution<> dist(item_prob);
     for (uint i = 0; i < ngoals; i++) {
       goals_queue[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
+      goals_delay[group].push_back(0);
     }
   }
   else if (goal_generation_type == GoalGenerationType::Real) {
@@ -469,6 +472,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
     boost::random::discrete_distribution<> dist(prob_v);
     for (uint i = 0; i < ngoals; i++) {
       goals_queue[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
+      goals_delay[group].push_back(0);
     }
   }
 
@@ -476,29 +480,37 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
 }
 
 Vertex* Graph::get_next_goal(int group, int look_ahead) {
+  assert(goals_queue[group].size() == goals_delay[group].size());
   // Check if the specific group's queue is empty
   if (goals_queue[group].empty()) {
     return random_target_vertex(group);
   }
 
   std::vector<Vertex*> temp_goals;
+  std::vector<int> temp_goals_delay;
   int size = std::min(look_ahead, static_cast<int>(goals_queue[group].size()));
 
   int cache_hit_index = 0;
   for (int i = 0; i < size; ++i) {
     Vertex* current_goal = goals_queue[group].front();
+    int current_goal_delay = goals_delay[group].front();
     goals_queue[group].pop_front();
+    goals_delay[group].pop_front();
     temp_goals.push_back(current_goal);
+    temp_goals_delay.push_back(current_goal_delay);
 
-    if (cache != nullptr && cache->look_ahead_cache(current_goal)) {
+    if (cache != nullptr && (cache->look_ahead_cache(current_goal) || current_goal_delay >= look_ahead)) {
       cache_hit_index = i;
       break;
     }
   }
 
   Vertex* selected_goal = temp_goals[cache_hit_index];
-  for (int i = temp_goals.size()-1; i >= 0 ; i--) {
-    if (i != cache_hit_index) goals_queue[group].push_front(temp_goals[i]);
+  for (int i = temp_goals.size() - 1; i >= 0; i--) {
+    if (i != cache_hit_index) {
+      goals_queue[group].push_front(temp_goals[i]);
+      goals_delay[group].push_front(++temp_goals_delay[i]);
+    }
   }
   return selected_goal;
 }
