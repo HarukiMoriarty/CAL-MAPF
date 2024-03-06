@@ -497,8 +497,8 @@ Vertex* Graph::get_next_goal(int group, int look_ahead) {
   }
 
   Vertex* selected_goal = temp_goals[cache_hit_index];
-  for (int i = 0; i < temp_goals.size(); i++) {
-    if (i != cache_hit_index) goals_queue[group].push_front(temp_goals[temp_goals.size() - i - 1]);
+  for (int i = temp_goals.size()-1; i >= 0 ; i--) {
+    if (i != cache_hit_index) goals_queue[group].push_front(temp_goals[i]);
   }
   return selected_goal;
 }
