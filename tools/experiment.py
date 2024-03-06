@@ -16,6 +16,8 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 class ExperimentParameters(TypedDict):
     map: List[str]
     cache: List[str]
+    look_ahead: List[str]
+    delay_deadline: List[str]
     ngoals: List[int]
     gg: List[str]
     goals_k: List[int]
@@ -52,7 +54,7 @@ def check_and_create_csv(output_csv_path: str):
         csv_path.parent.mkdir(parents=True, exist_ok=True)
         # Create the file and write the header
         with open(csv_path, 'w') as csv_file:
-            csv_file.write("map_name,cache,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k,cache_hit_rate,makespan,p0_steps,p50_steps,p99steps\n")
+            csv_file.write("map_name,cache,look_ahead,delay_deadline,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k,cache_hit_rate,makespan,p0_steps,p50_steps,p99steps\n")
 
 def check_and_create_throughput(output_throughput_path: str):
     # Convert string path to Path object for easier handling
@@ -62,7 +64,7 @@ def check_and_create_throughput(output_throughput_path: str):
         throughput_path.parent.mkdir(parents=True, exist_ok=True)
         # Create the file and write the header
         with open(throughput_path, 'w') as csv_file:
-            csv_file.write("map_name,cache,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k\n")
+            csv_file.write("map_name,cache,look_ahead,delay_deadline,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k\n")
 
 def run_experiment(params: ExperimentParameters):
     check_and_create_csv(params.get("output_csv_result", "./result/result.csv"))
@@ -72,6 +74,8 @@ def run_experiment(params: ExperimentParameters):
         "./build/CAL-MAPF",
         "--map", params["map"],
         "--cache", params["cache"],
+        "--look-ahead", str(params["look_ahead"]),
+        "--delay-deadline", str(params["delay_deadline"]),
         "--ngoals", str(params["ngoals"]),
         "-gg", params["gg"],
         "--goals-k", str(params["goals_k"]),

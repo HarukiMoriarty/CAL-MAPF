@@ -1,5 +1,7 @@
 map: ["assets/warehouse/with_cache/warehouse-30-80-64-800-multi_port.map", "assets/warehouse/with_cache/warehouse-30-80-64-800-single_port.map"]
 cache: ["LRU", "FIFO", "RANDOM"]
+look_ahead: [100]
+delay_deadline: [100]
 ngoals: [1000]
 gg: ["Zhang"]
 goals_k: [0]

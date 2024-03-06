@@ -1,5 +1,7 @@
 map: ["assets/warehouse/without_cache/warehouse-30-80-64-800-multi_port.map", "assets/warehouse/without_cache/warehouse-30-80-64-800-single_port.map"]
 cache: ["NONE"]
+look_ahead: [1]
+delay_deadline: [1]
 ngoals: [1000]
 gg: ["MK"]
 goals_k: [1, 20, 40, 80, 120, 160]

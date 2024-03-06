@@ -220,6 +220,8 @@ int main(int argc, char* argv[])
 
       csv_file << map_name << ","
         << cache << ","
+        << look_ahead << ","
+        << delay_deadline << ","
         << gg << ","
         << ngoals << ","
         << nagents << ","
@@ -288,6 +290,8 @@ int main(int argc, char* argv[])
 
   csv_file << map_name << ","
     << cache << ","
+    << look_ahead << ","
+    << delay_deadline << ","
     << gg << ","
     << ngoals << ","
     << nagents << ","
