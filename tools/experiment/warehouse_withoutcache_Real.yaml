@@ -1,0 +1,17 @@
+map: ["assets/warehouse/without_cache/warehouse-30-80-64-800-multi_port.map", "assets/warehouse/without_cache/warehouse-30-80-64-800-single_port.map"]
+cache: ["NONE"]
+look_ahead: [1]
+delay_deadline: [1]
+ngoals: [1000]
+gg: ["Real"]
+goals_k: [1, 20, 40, 80, 120, 160]
+goals_m: [200]
+nagents: [4, 8, 16, 32, 64]
+seed: 0
+time_limit_sec: 10
+output_step_result: "./result/step_result.txt"
+output_csv_result: "./result/result_Real.csv"
+output_throughput_result: "./result/throughput_Real.csv"
+log_short: false
+debug: false
+

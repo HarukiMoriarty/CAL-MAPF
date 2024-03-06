@@ -419,7 +419,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
     std::unordered_set<Vertex*> diff_goals;
     uint goals_generated = 0;
 
-    while (goals_queue[group].size() < ngoals) {
+    while (goals_queue[group].size() < (ngoals / group)) {
       if (goals_generated % 1000 == 0) {
         logger->info("Generated {:5}/{:5} goals.", goals_generated, ngoals);
       }
