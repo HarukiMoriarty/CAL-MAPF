@@ -1,4 +1,4 @@
-map: ["assets/warehouse/without_cache/warehouse-30-80-64-800-multi_port.map", "assets/warehouse/without_cache/warehouse-30-80-64-800-single_port.map"]
+map: ["assets/warehouse/without_cache/warehouse-30-80-800-multi_port.map", "assets/warehouse/without_cache/warehouse-30-80-800-single_port.map"]
 cache: ["NONE"]
 look_ahead: [1]
 delay_deadline: [1]

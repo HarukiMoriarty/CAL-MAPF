@@ -1,0 +1,36 @@
+type single_port
+group 1
+height 30
+width 80
+map
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+T..............................................................................T
+T.............HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C.......HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C........................................................................T
+T.............HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C.......HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C........................................................................T
+T..............................................................................T
+T...C.C.......HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C.......HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T..............................................................................T
+T...C.C.......HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C.......HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+TU.............................................................................T
+T...C.C........................................................................T
+T...C.C.......HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T.............HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C........................................................................T
+T...C.C.......HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T.............HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C........................................................................T
+T...C.C........................................................................T
+T.............HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C.......HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T...C.C........................................................................T
+T.............HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T.............HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
+T..............................................................................T
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+
