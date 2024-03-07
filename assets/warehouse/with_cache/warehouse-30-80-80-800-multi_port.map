@@ -1,39 +1,36 @@
 type multi_port
 group 4
-height 30
-width 80
+height 27
+width 71
 map
-TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
-T..............................................................................T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-TU.............................................................................T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T..............................................................................T
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+T.....................................................................T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+TU....................................................................T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T.....................................................................T
 
-T..............................................................................T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-TU.............................................................................T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T..............................................................................T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+TU....................................................................T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T.....................................................................T
 
-T..............................................................................T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-TU.............................................................................T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T..............................................................................T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+TU....................................................................T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T.....................................................................T
 
-T..............................................................................T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-TU.............................................................................T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH...........T
-T..............................................................................T
-TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+TU....................................................................T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T...C.C.C.C.C.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH.HHHHHHHHHH..T
+T.....................................................................T
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 

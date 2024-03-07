@@ -31,7 +31,7 @@ class ExperimentParameters(TypedDict):
     log_short: bool
     debug: bool
 
-def load_experiment(exp_name: str) -> ExperimentParameters | None:
+def load_experiment(exp_name: str):
     exp_path = BASE_PATH / "experiment" / f"{exp_name}.yaml"
     if not exp_path.exists():
         LOG.error(f"Experiment file {exp_path} not found.")
