@@ -233,24 +233,17 @@ void Log::make_life_long_log(const Instance& ins, const int seed)
     }
   }
 
-  std::ofstream out2("vis.yaml");
-  out2 << "statistics:" << std::endl;
-  out2 << "  makespan: " << get_makespan() << std::endl;
-  out2 << "  makespan_lb: " << get_makespan_lower_bound(ins, dist_table)
-    << std::endl;
-  out2 << "  seed: " << seed << "\n";
-  out2 << "  solved: " << !step_solution.empty() << "\n";
-  out2 << "  soc: " << get_sum_of_costs() << "\n";
-  out2 << "  soc_lb: " << get_sum_of_costs_lower_bound(ins, dist_table) << "\n";
-  out2 << "schedule:" << std::endl;
+  std::ofstream out2("./plot/vis.yaml");
+  out2 << "width: " << ins.graph.width << std::endl;
+  out2 << "height: " << ins.graph.height << std::endl;
 
   for (size_t a = 0; a < new_sol.size(); ++a) {
-    out2 << "  agent" << a << ":" << std::endl;
+    out2 << "agent" << a << ":" << std::endl;
     for (size_t t = 0; t < new_sol[a].size(); ++t) {
-      out2 << "    - x: " << get_y(new_sol[a][t]) << std::endl
-        << "      y: " << get_x(new_sol[a][t]) << std::endl
-        << "      t: " << t << std::endl
-        << "      s: " << bit_status_log[t][a] << std::endl;
+      out2 << "  - x: " << get_x(new_sol[a][t]) << std::endl
+        << "    y: " << get_y(new_sol[a][t]) << std::endl
+        << "    t: " << t << std::endl
+        << "    s: " << bit_status_log[t][a] << std::endl;
     }
   }
   out2.close();
