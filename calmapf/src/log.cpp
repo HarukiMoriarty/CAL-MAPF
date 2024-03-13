@@ -7,7 +7,7 @@ Log::Log(std::shared_ptr<spdlog::logger> _logger) : logger(std::move(_logger))
 }
 Log::~Log() {}
 
-bool Log::update_solution(Solution& solution)
+bool Log::update_solution(Solution& solution, std::vector<uint> bit_status)
 {
   // Update step solution
   step_solution = solution;
@@ -19,6 +19,10 @@ bool Log::update_solution(Solution& solution)
   else {
     life_long_solution.insert(life_long_solution.end(),
       step_solution.begin() + 1, step_solution.end());
+  }
+
+  for (uint i = 0; i < solution.size(); i++) {
+    bit_status_log.push_back(bit_status);
   }
   return true;
 }
@@ -245,7 +249,8 @@ void Log::make_life_long_log(const Instance& ins, const int seed)
     for (size_t t = 0; t < new_sol[a].size(); ++t) {
       out2 << "    - x: " << get_y(new_sol[a][t]) << std::endl
         << "      y: " << get_x(new_sol[a][t]) << std::endl
-        << "      t: " << t << std::endl;
+        << "      t: " << t << std::endl
+        << "      s: " << bit_status_log[t][a] << std::endl;
     }
   }
   out2.close();

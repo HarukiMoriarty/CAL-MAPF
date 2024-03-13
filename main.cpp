@@ -240,7 +240,7 @@ int main(int argc, char* argv[])
     }
 
     // update step solution
-    if (!log.update_solution(solution)) {
+    if (!log.update_solution(solution, ins.bit_status)) {
       console->error("Update step solution fails!");
       return 1;
     }
@@ -278,7 +278,7 @@ int main(int argc, char* argv[])
   else {
     console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", ngoals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
-  // log.make_life_long_log(ins, seed);
+  log.make_life_long_log(ins, seed);
 
 
   std::ofstream csv_file(output_csv_name, std::ios::app);

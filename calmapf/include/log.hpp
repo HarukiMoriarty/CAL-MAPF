@@ -9,12 +9,13 @@
 struct Log {
     Solution step_solution;
     Solution life_long_solution;
+    std::vector<std::vector<uint>> bit_status_log;
     std::shared_ptr<spdlog::logger> logger;
 
     Log(std::shared_ptr<spdlog::logger> _logger);
     ~Log();
 
-    bool update_solution(Solution& solution);
+    bool update_solution(Solution& solution, std::vector<uint> bit_status);
     bool is_feasible_solution(const Instance& ins, const int verbose = 0);
     int get_makespan();
     int get_path_cost(int i);  // single-agent path cost
