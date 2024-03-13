@@ -1,12 +1,18 @@
 import yaml
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Path to the YAML file
-file_path = './plot/vis.yaml'
+# Setup command-line argument parsing
+parser = argparse.ArgumentParser(description='Generate a heatmap from a YAML file')
+parser.add_argument('--input', '-i', type=str, default='./plot/vis.yaml', help='Path to the input YAML file (default: ./plot/vis.yaml)')
+parser.add_argument('--output', '-o', type=str, default='./plot/HeatMap.jpg', help='Path to the output heatmap image (default: ./plot/HeatMap.jpg)')
+
+# Parse arguments
+args = parser.parse_args()
 
 # Read the YAML file
-with open(file_path, 'r') as file:
+with open(args.input, 'r') as file:
     data = yaml.safe_load(file)
 
 # Extract grid dimensions
@@ -33,4 +39,4 @@ plt.xlabel('Height')
 plt.ylabel('Width')
 plt.xticks(range(0, width, max(1, width // 10)))  # Adjust the step based on your grid width
 plt.yticks(range(0, height, max(1, height // 10)))  # Adjust the step based on your grid height
-plt.savefig("HeatMap.jpg")
+plt.savefig(args.output)
