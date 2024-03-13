@@ -461,20 +461,20 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
   // 3. The last item in B-class has the same probability as the first item in C-class.
   // 4. The sum of the probabilities for all A-class items,B-class items, and C-class items are 70%, 20%, and 10%, correspondingly.
   else if (goal_generation_type == GoalGenerationType::Zhang) {
-    std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group].size());
+    std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group_index].size());
     boost::random::discrete_distribution<> dist(item_prob);
-    for (uint i = 0; i < ngoals; i++) {
-      goals_queue[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
-      goals_delay[group].push_back(0);
+    for (uint i = 0; i < (uint(ngoals / group) + 1); i++) {
+      goals_queue[group_index].push_back(cargo_vertices[group_index][dist(*randomSeed)]);
+      goals_delay[group_index].push_back(0);
     }
   }
   else if (goal_generation_type == GoalGenerationType::Real) {
     std::vector<float> prob_v = compute_frequency_from_file(goal_real_file);
-    prob_v.resize(cargo_vertices[group].size());
+    prob_v.resize(cargo_vertices[group_index].size());
     boost::random::discrete_distribution<> dist(prob_v);
-    for (uint i = 0; i < ngoals; i++) {
-      goals_queue[group].push_back(cargo_vertices[group][dist(*randomSeed)]);
-      goals_delay[group].push_back(0);
+    for (uint i = 0; i < (uint(ngoals / group) + 1); i++) {
+      goals_queue[group_index].push_back(cargo_vertices[group_index][dist(*randomSeed)]);
+      goals_delay[group_index].push_back(0);
     }
   }
 
