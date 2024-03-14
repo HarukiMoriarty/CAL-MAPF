@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
   program.add_argument("-o", "--output_step_result").help("step result output file").default_value(std::string("./result/step_result.txt"));    // output file
   program.add_argument("-c", "--output_csv_result").help("csv output file").default_value(std::string("./result/result.csv"));
   program.add_argument("-th", "--output_throughput_result").help("throughput output file").default_value(std::string("./result/throughput.csv"));
+  program.add_argument("-vr", "--output_visual_output").help("visual output file").default_value(std::string("./result/vis.yaml"));
   program.add_argument("-l", "--log_short").default_value(false).implicit_value(true);
   program.add_argument("-d", "--debug").help("enable debug logging").default_value(false).implicit_value(true);                                 // debug mode
 
@@ -50,6 +51,7 @@ int main(int argc, char* argv[])
   const auto output_step_name = program.get<std::string>("output_step_result");
   const auto output_csv_name = program.get<std::string>("output_csv_result");
   const auto output_throughput_name = program.get<std::string>("output_throughput_result");
+  const auto visual_name = program.get<std::string>("output_visual_output");
   const auto log_short = program.get<bool>("log_short");
   const auto ngoals = std::stoi(program.get<std::string>("ngoals"));
   const auto gg = program.get<std::string>("goals_generation");
@@ -278,7 +280,7 @@ int main(int argc, char* argv[])
   else {
     console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", ngoals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
-  log.make_life_long_log(ins, seed);
+  log.make_life_long_log(ins, visual_name);
 
 
   std::ofstream csv_file(output_csv_name, std::ios::app);

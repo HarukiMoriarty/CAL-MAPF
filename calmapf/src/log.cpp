@@ -216,7 +216,7 @@ void Log::make_step_log(const Instance& ins, const std::string& output_name,
   log.close();
 }
 
-void Log::make_life_long_log(const Instance& ins, const int seed)
+void Log::make_life_long_log(const Instance& ins, std::string visual_name)
 {
   auto dist_table = DistTable(ins);
   auto get_x = [&](int k) { return k % ins.graph.width; };
@@ -233,7 +233,7 @@ void Log::make_life_long_log(const Instance& ins, const int seed)
     }
   }
 
-  std::ofstream out2("./plot/vis.yaml");
+  std::ofstream out2(visual_name);
   out2 << "width: " << ins.graph.width << std::endl;
   out2 << "height: " << ins.graph.height << std::endl;
 
