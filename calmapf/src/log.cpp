@@ -218,6 +218,7 @@ void Log::make_step_log(const Instance& ins, const std::string& output_name,
 
 void Log::make_life_long_log(const Instance& ins, std::string visual_name)
 {
+  std::cout<<visual_name<<std::endl;
   auto dist_table = DistTable(ins);
   auto get_x = [&](int k) { return k % ins.graph.width; };
   auto get_y = [&](int k) { return k / ins.graph.width; };
@@ -236,14 +237,14 @@ void Log::make_life_long_log(const Instance& ins, std::string visual_name)
   std::ofstream out2(visual_name);
   out2 << "width: " << ins.graph.width << std::endl;
   out2 << "height: " << ins.graph.height << std::endl;
-
+  out2 << "schedule: "<< std::endl;
   for (size_t a = 0; a < new_sol.size(); ++a) {
-    out2 << "agent" << a << ":" << std::endl;
+    out2 << "  agent" << a << ":" << std::endl;
     for (size_t t = 0; t < new_sol[a].size(); ++t) {
-      out2 << "  - x: " << get_x(new_sol[a][t]) << std::endl
-        << "    y: " << get_y(new_sol[a][t]) << std::endl
-        << "    t: " << t << std::endl
-        << "    s: " << bit_status_log[t][a] << std::endl;
+      out2 << "    - x: " << get_y(new_sol[a][t]) << std::endl
+        << "      y: " << get_x(new_sol[a][t]) << std::endl
+        << "      t: " << t << std::endl
+        << "      s: " << bit_status_log[t][a] << std::endl;
     }
   }
   out2.close();
