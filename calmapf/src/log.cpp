@@ -20,8 +20,7 @@ bool Log::update_solution(Solution& solution, std::vector<uint> bit_status)
     life_long_solution.insert(life_long_solution.end(),
       step_solution.begin() + 1, step_solution.end());
   }
-
-  for (uint i = 0; i < solution.size(); i++) {
+  for (uint i = 0; i < solution.size()-1; i++) {
     bit_status_log.push_back(bit_status);
   }
   return true;
