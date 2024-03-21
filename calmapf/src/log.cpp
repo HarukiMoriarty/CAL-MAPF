@@ -20,9 +20,19 @@ bool Log::update_solution(Solution& solution, std::vector<uint> bit_status)
     life_long_solution.insert(life_long_solution.end(),
       step_solution.begin() + 1, step_solution.end());
   }
-  for (uint i = 0; i < solution.size()-1; i++) {
-    bit_status_log.push_back(bit_status);
+
+  // Update bit status life long log
+  if (bit_status_log.empty()) {
+    for (uint i = 0; i < solution.size(); i++) {
+      bit_status_log.push_back(bit_status);
+    }
   }
+  else {
+    for (uint i = 1; i < solution.size(); i++) {
+      bit_status_log.push_back(bit_status);
+    }
+  }
+
   return true;
 }
 
@@ -217,7 +227,7 @@ void Log::make_step_log(const Instance& ins, const std::string& output_name,
 
 void Log::make_life_long_log(const Instance& ins, std::string visual_name)
 {
-  std::cout<<visual_name<<std::endl;
+  std::cout << visual_name << std::endl;
   auto dist_table = DistTable(ins);
   auto get_x = [&](int k) { return k % ins.graph.width; };
   auto get_y = [&](int k) { return k / ins.graph.width; };
@@ -236,7 +246,7 @@ void Log::make_life_long_log(const Instance& ins, std::string visual_name)
   std::ofstream out2(visual_name);
   out2 << "width: " << ins.graph.width << std::endl;
   out2 << "height: " << ins.graph.height << std::endl;
-  out2 << "schedule: "<< std::endl;
+  out2 << "schedule: " << std::endl;
   for (size_t a = 0; a < new_sol.size(); ++a) {
     out2 << "  agent" << a << ":" << std::endl;
     for (size_t t = 0; t < new_sol[a].size(); ++t) {
