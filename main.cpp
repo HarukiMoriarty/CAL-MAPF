@@ -270,7 +270,6 @@ int main(int argc, char* argv[])
     }
     console->debug("Reached Goals: {}", nagents_with_new_goals);
   }
-  log.bit_status_log.push_back(ins.bit_status);
   // Get percentiles
   std::vector<uint> step_percentiles = ins.compute_percentiles();
 
