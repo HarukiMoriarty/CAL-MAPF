@@ -371,22 +371,42 @@ Graph::Graph(
         // left
         if (x > 0) {
           auto u = U[width * y + (x - 1)];
-          if (u != nullptr) v->neighbor.push_back(u);
+          if (v->cargo) {
+            if (u != nullptr && !u->cargo) v->neighbor.push_back(u);
+          }
+          else {
+            if (u != nullptr) v->neighbor.push_back(u);
+          }
         }
         // right
         if (x < width - 1) {
           auto u = U[width * y + (x + 1)];
-          if (u != nullptr) v->neighbor.push_back(u);
+          if (v->cargo) {
+            if (u != nullptr && !u->cargo) v->neighbor.push_back(u);
+          }
+          else {
+            if (u != nullptr) v->neighbor.push_back(u);
+          }
         }
         // up
         if (y < height - 1) {
           auto u = U[width * (y + 1) + x];
-          if (u != nullptr) v->neighbor.push_back(u);
+          if (v->cargo) {
+            if (u != nullptr && !u->cargo) v->neighbor.push_back(u);
+          }
+          else {
+            if (u != nullptr) v->neighbor.push_back(u);
+          }
         }
         // down
         if (y > 0) {
           auto u = U[width * (y - 1) + x];
-          if (u != nullptr) v->neighbor.push_back(u);
+          if (v->cargo) {
+            if (u != nullptr && !u->cargo) v->neighbor.push_back(u);
+          }
+          else {
+            if (u != nullptr) v->neighbor.push_back(u);
+          }
         }
       }
     }
