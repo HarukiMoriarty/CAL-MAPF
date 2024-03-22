@@ -140,3 +140,38 @@ enum class CacheType {
 inline bool is_cache(CacheType cache_type) {
   return cache_type != CacheType::NONE;
 }
+
+template <>
+struct fmt::formatter<std::vector<unsigned int>> {
+  // Presentation format: 'f' - fixed, 'e' - exponential.
+  char presentation = 'f';
+
+  // Parses format specifications of the form ['f' | 'e'].
+  constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    // [ctx.begin(), ctx.end()) is a character range that contains a part of
+    // the format string starting from the format specifications to be parsed,
+    // e.g., in "{:f}", the range will contain "f}". The parser may consume
+    // none of this range, in which case it returns ctx.begin().
+    auto it = ctx.begin(), end = ctx.end();
+    if (it != end && (*it == 'f' || *it == 'e')) presentation = *it++;
+
+    // Check if reached the end of the range:
+    if (it != end && *it != '}') throw format_error("invalid format");
+
+    // Return an iterator past the end of the parsed range:
+    return it;
+  }
+
+  // Formats the vector v to the provided buffer.
+  template <typename FormatContext>
+  auto format(const std::vector<unsigned int>& v, FormatContext& ctx) const -> decltype(ctx.out()) {
+    // ctx.out() is an output iterator to write to.
+    format_to(ctx.out(), "[");
+    auto sep = "";
+    for (auto& elem : v) {
+      format_to(ctx.out(), "{}{}", sep, elem);
+      sep = ", ";
+    }
+    return format_to(ctx.out(), "]");
+  }
+};

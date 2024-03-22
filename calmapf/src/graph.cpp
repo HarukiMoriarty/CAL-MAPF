@@ -463,7 +463,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
   else if (goal_generation_type == GoalGenerationType::Zhang) {
     std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group_index].size());
     boost::random::discrete_distribution<> dist(item_prob);
-    for (uint i = 0; i < (uint(ngoals / group) + 1); i++) {
+    for (uint i = 0; i < (ngoals / uint(group) + 1); i++) {
       goals_queue[group_index].push_back(cargo_vertices[group_index][dist(*randomSeed)]);
       goals_delay[group_index].push_back(0);
     }
@@ -472,13 +472,13 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
     std::vector<float> prob_v = compute_frequency_from_file(goal_real_file);
     prob_v.resize(cargo_vertices[group_index].size());
     boost::random::discrete_distribution<> dist(prob_v);
-    for (uint i = 0; i < (uint(ngoals / group) + 1); i++) {
+    for (uint i = 0; i < (ngoals / uint(group) + 1); i++) {
       goals_queue[group_index].push_back(cargo_vertices[group_index][dist(*randomSeed)]);
       goals_delay[group_index].push_back(0);
     }
   }
 
-  logger->debug("Group {} goals {}", group, goals_queue[group].size());
+  logger->debug("Group {} goals {}", group, goals_queue[group_index].size());
 }
 
 Vertex* Graph::get_next_goal(int group, int look_ahead) {

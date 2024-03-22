@@ -65,10 +65,12 @@ uint Instance::update_on_reaching_goals_with_cache(
   uint& cache_access,
   uint& cache_hit)
 {
+  logger->debug("Old Goals: {}", goals);
   logger->debug("Remain goals:  {}", remain_goals);
   int step = vertex_list.size() - 1;
   logger->debug("Step length:   {}", step);
   logger->debug("Solution ends: {}", vertex_list[step]);
+  logger->debug("Status before: {}", bit_status);
   int reached_count = 0;
 
   // TODO: assign goals to closed free agents
@@ -91,6 +93,8 @@ uint Instance::update_on_reaching_goals_with_cache(
           j, *cargo_goals[j], *goals[j]);
         bit_status[j] = 4;
         graph.cache->update_cargo_from_cache(cargo_goals[j], goals[j]);
+        // Update goals and steps
+        goals[j] = graph.unloading_ports[cargo_goals[j]->group];
       }
       // Status 2 finished. ==> Status 4
       // Agent has bring uncached cargo back to cache.
@@ -102,10 +106,9 @@ uint Instance::update_on_reaching_goals_with_cache(
           j, *cargo_goals[j], *goals[j]);
         bit_status[j] = 4;
         graph.cache->update_cargo_into_cache(cargo_goals[j], goals[j]);
+        // Update goals and steps
+        goals[j] = graph.unloading_ports[cargo_goals[j]->group];
       }
-
-      // Update goals and steps
-      goals[j] = graph.unloading_ports[cargo_goals[j]->group];
     }
   }
 
@@ -265,8 +268,9 @@ uint Instance::update_on_reaching_goals_with_cache(
     }
   }
 
-  starts = vertex_list[step];
-  logger->debug("Ends: {}", starts);
+  logger->debug("Ends: {}", vertex_list[step]);
+  logger->debug("New Goals: {}", goals);
+  logger->debug("Status after: {}", bit_status);
   return reached_count;
 }
 

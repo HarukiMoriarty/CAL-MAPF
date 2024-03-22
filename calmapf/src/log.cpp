@@ -227,6 +227,7 @@ void Log::make_step_log(const Instance& ins, const std::string& output_name,
 
 void Log::make_life_long_log(const Instance& ins, std::string visual_name)
 {
+  logger->info("life long solution size: {}, bit status size: {}", life_long_solution.size(), bit_status_log.size());
   std::cout << visual_name << std::endl;
   auto dist_table = DistTable(ins);
   auto get_x = [&](int k) { return k % ins.graph.width; };
