@@ -268,6 +268,7 @@ uint Instance::update_on_reaching_goals_with_cache(
     }
   }
 
+  starts = vertex_list[step];
   logger->debug("Ends: {}", vertex_list[step]);
   logger->debug("New Goals: {}", goals);
   logger->debug("Status after: {}", bit_status);
