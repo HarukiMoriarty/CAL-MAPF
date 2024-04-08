@@ -5,3 +5,5 @@ add_library(${PROJECT_NAME} STATIC ${SRCS})
 target_compile_options(${PROJECT_NAME} PUBLIC -O3 -Wall -mtune=native -march=native)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} INTERFACE ./include)
+target_link_libraries(${PROJECT_NAME} PUBLIC argparse)
+

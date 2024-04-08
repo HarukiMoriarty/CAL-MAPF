@@ -7,132 +7,12 @@ int main(int argc, char* argv[])
   auto console = spdlog::stderr_color_mt("console");
   console->set_level(spdlog::level::info);
 
-  // arguments parser
-  argparse::ArgumentParser program("lacam", "0.1.0");
-  program.add_argument("-m", "--map").help("map file").required();                                                                              // map file
-  program.add_argument("-ca", "--cache").help("cache type: NONE, LRU, FIFO, RANDOM").default_value(std::string("NONE"));                        // cache type                    
-  program.add_argument("-la", "--look-ahead").help("look ahead number").default_value(std::string("1"));
-  program.add_argument("-dd", "--delay-deadline").help("look ahead paras: a task must be assigned over delay deadline").default_value(std::string("1"));
-  program.add_argument("-ng", "--ngoals").help("number of goals").required();                                                                   // number of goals: agent first go to get goal, and then return to unloading port
-  program.add_argument("-gg", "--goals_generation").help("goals generation strategy: MK, Zhang, Real").required();                              // goals generation type
-  program.add_argument("-gk", "--goals-k").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
-  program.add_argument("-gm", "--goals-m").help("maximum k different number of goals in m segment of all goals").default_value(std::string("0"));
-  program.add_argument("-grf", "--goals-real-file").help("real distribution data file path").default_value(std::string("./data/order_data.csv"));
-  program.add_argument("-na", "--nagents").help("number of agents").required();                                                                 // number of agents
-  program.add_argument("-s", "--seed").help("seed").default_value(std::string("0"));                                                            // random seed
-  program.add_argument("-v", "--verbose").help("verbose").default_value(std::string("0"));                                                      // verbose
-  program.add_argument("-t", "--time_limit_sec").help("time limit sec").default_value(std::string("10"));                                       // time limit (second)
-  program.add_argument("-o", "--output_step_result").help("step result output file").default_value(std::string("./result/step_result.txt"));    // output file
-  program.add_argument("-c", "--output_csv_result").help("csv output file").default_value(std::string("./result/result.csv"));
-  program.add_argument("-th", "--output_throughput_result").help("throughput output file").default_value(std::string("./result/throughput.csv"));
-  program.add_argument("-vr", "--output_visual_output").help("visual output file").default_value(std::string("./result/vis.yaml"));
-  program.add_argument("-l", "--log_short").default_value(false).implicit_value(true);
-  program.add_argument("-d", "--debug").help("enable debug logging").default_value(false).implicit_value(true);                                 // debug mode
+  Parser parser(argc, argv);
 
-  try {
-    program.parse_known_args(argc, argv);
-  }
-  catch (const std::runtime_error& err) {
-    std::cerr << err.what() << std::endl;
-    std::cerr << program;
-    std::exit(1);
-  }
-
-  // setup instance
-  const auto verbose = std::stoi(program.get<std::string>("verbose"));
-  const auto time_limit_sec = std::stoi(program.get<std::string>("time_limit_sec"));
-  auto deadline = Deadline(time_limit_sec * 1000);
-  const auto seed = std::stoi(program.get<std::string>("seed"));
-  auto MT = std::mt19937(seed);
-  const auto map_name = program.get<std::string>("map");
-  const auto cache = program.get<std::string>("cache");
-  const auto look_ahead = std::stoi(program.get<std::string>("look-ahead"));
-  const auto delay_deadline = std::stoi(program.get<std::string>("delay-deadline"));
-  const auto output_step_name = program.get<std::string>("output_step_result");
-  const auto output_csv_name = program.get<std::string>("output_csv_result");
-  const auto output_throughput_name = program.get<std::string>("output_throughput_result");
-  const auto visual_name = program.get<std::string>("output_visual_output");
-  const auto log_short = program.get<bool>("log_short");
-  const auto ngoals = std::stoi(program.get<std::string>("ngoals"));
-  const auto gg = program.get<std::string>("goals_generation");
-  const auto grf = program.get<std::string>("goals-real-file");
-  const auto nagents = std::stoi(program.get<std::string>("nagents"));
-  const auto debug = program.get<bool>("debug");
-  if (debug) console->set_level(spdlog::level::debug);
-
-  CacheType cache_type = CacheType::NONE;
-  if (cache == "NONE") {
-    cache_type = CacheType::NONE;
-  }
-  else if (cache == "LRU") {
-    cache_type = CacheType::LRU;
-  }
-  else if (cache == "FIFO") {
-    cache_type = CacheType::FIFO;
-  }
-  else if (cache == "RANDOM") {
-    cache_type = CacheType::RANDOM;
-  }
-  else {
-    console->error("Invalid cache type!");
-    exit(1);
-  }
-
-  GoalGenerationType goal_generation_type;
-  const auto goals_m = std::stoi(program.get<std::string>("goals-m"));
-  const auto goals_k = std::stoi(program.get<std::string>("goals-k"));
-
-  if (gg == "MK") {
-    if (goals_m == 0 || goals_k == 0) {
-      console->error("For MK generation, both --goals-m and --goals-k must have non-zero values.");
-      exit(1);
-    }
-    goal_generation_type = GoalGenerationType::MK;
-  }
-  else if (gg == "Zhang") {
-    goal_generation_type = GoalGenerationType::Zhang;
-  }
-  else if (gg == "Real") {
-    goal_generation_type = GoalGenerationType::Real;
-  }
-  else {
-    console->error("Invalid goals_generation strategy specified.");
-    exit(1);
-  }
-
-  // check paras
-  if (nagents > ngoals) {
-    console->error("number of goals must larger or equal to number of agents");
-    return 1;
-  }
-  if (look_ahead < 1) {
-    console->error("look ahead should be greater than 1");
-    return 1;
-  }
-
-  // output arguments info
-  console->info("Map file:         {}", map_name);
-  console->info("Cache type:       {}", cache);
-  console->info("Look ahead:       {}", look_ahead);
-  console->info("Number of goals:  {}", ngoals);
-  console->info("Number of agents: {}", nagents);
-  console->info("Goal Generation:  {}", gg);
-  if (goal_generation_type == GoalGenerationType::MK) {
-    console->info("Goals m:          {}", goals_m);
-    console->info("Goals k:          {}", goals_k);
-  }
-  else if (goal_generation_type == GoalGenerationType::Real) {
-    console->info("Real dis file:    {}", grf);
-  }
-  console->info("Seed:             {}", seed);
-  console->info("Verbose:          {}", verbose);
-  console->info("Time limit (sec): {}", time_limit_sec);
-  console->info("Output file:      {}", output_step_name);
-  console->info("Log short:        {}", log_short);
-  console->info("Debug:            {}", debug);
+  auto deadline = Deadline(parser.time_limit_sec * 1000);
 
   // generating instance
-  auto ins = Instance(map_name, &MT, console, goal_generation_type, grf, cache_type, look_ahead, delay_deadline, nagents, ngoals, goals_m, goals_k);
+  auto ins = Instance(parser.map_file, &parser.MT, console, parser.goals_gen_strategy, parser.real_dist_file_path, parser.cache_type, parser.look_ahead_num, parser.delay_deadline_limit, parser.num_agents, parser.num_goals, parser.goals_max_m, parser.goals_max_k);
   if (!ins.is_valid(1)) {
     console->error("instance is invalid!");
     return 1;
@@ -144,21 +24,21 @@ int main(int argc, char* argv[])
   auto timer = std::chrono::steady_clock::now();
 
   // prepare for throughput record
-  std::ofstream throughput_file(output_throughput_name, std::ios::app);
+  std::ofstream throughput_file(parser.output_throughput_file, std::ios::app);
   if (!throughput_file.is_open()) {
-    std::cerr << "Failed to open file: " << output_throughput_name << std::endl;
+    std::cerr << "Failed to open file: " << parser.output_throughput_file << std::endl;
     return 1;
   }
-  throughput_file << map_name << ","
-    << cache << ","
-    << gg << ","
-    << ngoals << ","
-    << nagents << ","
-    << seed << ","
-    << verbose << ","
-    << time_limit_sec << ","
-    << goals_m << ","
-    << goals_k << ",";
+  throughput_file << parser.map_file << ","
+    << parser.cache_type_input << ","
+    << parser.goals_gen_strategy_input << ","
+    << parser.num_goals << ","
+    << parser.num_agents << ","
+    << parser.random_seed << ","
+    << parser.verbose_level << ","
+    << parser.time_limit_sec << ","
+    << parser.goals_max_m << ","
+    << parser.goals_max_k << ",";
 
   // solving
   uint nagents_with_new_goals = 0;
@@ -167,7 +47,7 @@ int main(int argc, char* argv[])
   uint cache_access = 0;
   uint batch_idx = 0;
   uint throughput_index_cnt = 0;
-  for (int i = 0; i < ngoals; i += nagents_with_new_goals) {
+  for (int i = 0; i < parser.num_goals; i += nagents_with_new_goals) {
     batch_idx++;
     // info output
     auto current_time = std::chrono::steady_clock::now();
@@ -175,7 +55,7 @@ int main(int argc, char* argv[])
       current_time - timer)
       .count();
 
-    if (!debug && batch_idx % 100 == 0 && cache_access > 0 && is_cache(cache_type)) {
+    if (!parser.debug_log && batch_idx % 100 == 0 && cache_access > 0 && is_cache(parser.cache_type)) {
       double cacheRate = static_cast<double>(cache_hit) / cache_access * 100.0;
       console->info(
         "Elapsed Time: {:5}ms   |   Goals Reached: {:5}   |   Cache Hit Rate: "
@@ -184,7 +64,7 @@ int main(int argc, char* argv[])
       // Reset the timer
       timer = std::chrono::steady_clock::now();
     }
-    else if (!debug && batch_idx % 100 == 0 && !is_cache(cache_type)) {
+    else if (!parser.debug_log && batch_idx % 100 == 0 && !is_cache(parser.cache_type)) {
       console->info(
         "Elapsed Time: {:5}ms   |   Goals Reached: {:5}   |   Steps Used: {:5}",
         elapsed_time, i, makespan);
@@ -208,30 +88,30 @@ int main(int argc, char* argv[])
     // reset time clock
     assert(deadline.reset());
 
-    auto solution = solve(ins, verbose - 1, &deadline, &MT);
+    auto solution = solve(ins, parser.verbose_level - 1, &deadline, &parser.MT);
     const auto comp_time_ms = deadline.elapsed_ms();
 
     // failure
     if (solution.empty()) {
-      std::ofstream csv_file(output_csv_name, std::ios::app);
+      std::ofstream csv_file(parser.output_csv_file, std::ios::app);
 
       if (!csv_file.is_open()) {
-        std::cerr << "Failed to open file: " << output_csv_name << std::endl;
+        std::cerr << "Failed to open file: " << parser.output_csv_file << std::endl;
         return 1;
       }
 
-      csv_file << map_name << ","
-        << cache << ","
-        << look_ahead << ","
-        << delay_deadline << ","
-        << gg << ","
-        << ngoals << ","
-        << nagents << ","
-        << seed << ","
-        << verbose << ","
-        << time_limit_sec << ","
-        << goals_m << ","
-        << goals_k << ","
+      csv_file << parser.map_file << ","
+        << parser.cache_type_input << ","
+        << parser.look_ahead_num << ","
+        << parser.delay_deadline_limit << ","
+        << parser.goals_gen_strategy_input << ","
+        << parser.num_goals << ","
+        << parser.num_agents << ","
+        << parser.random_seed << ","
+        << parser.verbose_level << ","
+        << parser.time_limit_sec << ","
+        << parser.goals_max_m << ","
+        << parser.goals_max_k << ","
         << "fail to solve"
         << std::endl;
 
@@ -248,7 +128,7 @@ int main(int argc, char* argv[])
     }
 
     // check feasibility
-    if (!log.is_feasible_solution(ins, verbose)) {
+    if (!log.is_feasible_solution(ins, parser.verbose_level)) {
       console->error("invalid solution");
       return 1;
     }
@@ -257,51 +137,50 @@ int main(int argc, char* argv[])
     makespan += (solution.size() - 1);
 
     // post processing
-    log.print_stats(verbose, ins, comp_time_ms);
-    log.make_step_log(ins, output_step_name, comp_time_ms, map_name, seed,
-      log_short);
+    log.print_stats(parser.verbose_level, ins, comp_time_ms);
+    log.make_step_log(ins, parser.output_step_file, comp_time_ms, parser.map_file, parser.random_seed, parser.short_log_format);
 
     // assign new goals
-    if (is_cache(cache_type)) {
-      nagents_with_new_goals = ins.update_on_reaching_goals_with_cache(solution, ngoals - i, cache_access, cache_hit);
+    if (is_cache(parser.cache_type)) {
+      nagents_with_new_goals = ins.update_on_reaching_goals_with_cache(solution, parser.num_goals - i, cache_access, cache_hit);
     }
     else {
-      nagents_with_new_goals = ins.update_on_reaching_goals_without_cache(solution, ngoals - i);
+      nagents_with_new_goals = ins.update_on_reaching_goals_without_cache(solution, parser.num_goals - i);
     }
     console->debug("Reached Goals: {}", nagents_with_new_goals);
   }
   // Get percentiles
   std::vector<uint> step_percentiles = ins.compute_percentiles();
 
-  double total_cache_rate = is_cache(cache_type) ? static_cast<double>(cache_hit) / cache_access * 100.0 : .0;
-  if (is_cache(cache_type)) {
-    console->info("Total Goals Reached: {:5}   |   Total Cache Hit Rate: {:2.2f}%    |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", ngoals, total_cache_rate, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
+  double total_cache_rate = is_cache(parser.cache_type) ? static_cast<double>(cache_hit) / cache_access * 100.0 : .0;
+  if (is_cache(parser.cache_type)) {
+    console->info("Total Goals Reached: {:5}   |   Total Cache Hit Rate: {:2.2f}%    |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", parser.num_goals, total_cache_rate, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
   else {
-    console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", ngoals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
+    console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", parser.num_goals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
-  log.make_life_long_log(ins, visual_name);
+  log.make_life_long_log(ins, parser.output_visual_file);
 
 
-  std::ofstream csv_file(output_csv_name, std::ios::app);
+  std::ofstream csv_file(parser.output_csv_file, std::ios::app);
 
   if (!csv_file.is_open()) {
-    std::cerr << "Failed to open file: " << output_csv_name << std::endl;
+    std::cerr << "Failed to open file: " << parser.output_csv_file << std::endl;
     return 1;
   }
 
-  csv_file << map_name << ","
-    << cache << ","
-    << look_ahead << ","
-    << delay_deadline << ","
-    << gg << ","
-    << ngoals << ","
-    << nagents << ","
-    << seed << ","
-    << verbose << ","
-    << time_limit_sec << ","
-    << goals_m << ","
-    << goals_k << ","
+  csv_file << parser.map_file << ","
+    << parser.cache_type_input << ","
+    << parser.look_ahead_num << ","
+    << parser.delay_deadline_limit << ","
+    << parser.goals_gen_strategy_input << ","
+    << parser.num_goals << ","
+    << parser.num_agents << ","
+    << parser.random_seed << ","
+    << parser.verbose_level << ","
+    << parser.time_limit_sec << ","
+    << parser.goals_max_m << ","
+    << parser.goals_max_k << ","
     << total_cache_rate << ","
     << makespan << ","
     << step_percentiles[0] << ","
@@ -311,7 +190,7 @@ int main(int argc, char* argv[])
 
   csv_file.close();
 
-  double total_throughput = double(ngoals) / double(makespan);
+  double total_throughput = double(parser.num_goals) / double(makespan);
   throughput_file << total_throughput << std::endl;
   throughput_file.close();
 

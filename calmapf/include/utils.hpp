@@ -175,3 +175,16 @@ struct fmt::formatter<std::vector<unsigned int>> {
     return format_to(ctx.out(), "]");
   }
 };
+
+// Graph Type
+enum class GraphType {
+  SINGLE_PORT,
+  MULTI_PORT
+};
+
+// Goals generation type
+enum class GoalGenerationType {
+  MK,
+  Zhang,
+  Real,
+};

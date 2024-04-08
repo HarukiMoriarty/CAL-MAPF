@@ -8,19 +8,6 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
 
- // Graph Type
-enum class GraphType {
-  SINGLE_PORT,
-  MULTI_PORT
-};
-
-// Goals generation type
-enum class GoalGenerationType {
-  MK,
-  Zhang,
-  Real,
-};
-
 struct Graph {
   Vertices V;                                 // without nullptr
   Vertices U;                                 // with nullptr, i.e., |U| = width * height
