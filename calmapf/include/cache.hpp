@@ -4,6 +4,7 @@
 #pragma once
 
 #include "utils.hpp"
+#include "parser.hpp"
 #include <cassert>
 
 struct Cache {
@@ -12,9 +13,6 @@ struct Cache {
     std::vector<Vertices> node_coming_cargo;
     std::vector<std::vector<uint>> bit_cache_get_lock;
     std::vector<std::vector<uint>> bit_cache_insert_lock;
-    std::shared_ptr<spdlog::logger> logger;
-    CacheType cache_type;
-    std::mt19937* randomSeed;
     std::vector<std::vector<bool>> is_empty;
 
     // LRU paras
@@ -27,7 +25,13 @@ struct Cache {
 
     // Random paras (no paras)
 
-    Cache(std::shared_ptr<spdlog::logger> _logger, CacheType _cache_type, std::mt19937* _randomSeed = 0);
+    // Parser
+    Parser* parser;
+
+    // Logger
+    std::shared_ptr<spdlog::logger> cache_console;
+
+    Cache(Parser* _parser);
     ~Cache();
 
     /**

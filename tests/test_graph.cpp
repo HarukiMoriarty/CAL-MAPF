@@ -1,15 +1,10 @@
 #include <calmapf.hpp>
 #include "gtest/gtest.h"
 
-TEST(Graph, single_port_load_graph)
+TEST(Graph, single_port_load_graph_test)
 {
-  const std::string filename = "./assets/test/test-8-8-single_port.map";
-  const std::string goal_real_file_path = "./data/order_data.csv";
-  auto test = spdlog::stderr_color_mt("test_single_port");
-  auto MT = std::mt19937(0);
-  test->set_level(spdlog::level::debug);
-
-  auto G = Graph(filename, test, GoalGenerationType::MK, goal_real_file_path, 10, 5, 10, CacheType::LRU, 10, &MT);
+  Parser single_port_load_graph_test_parser = Parser("./assets/test/test-8-8-single_port.map", CacheType::LRU);
+  auto G = Graph(&single_port_load_graph_test_parser);
 
   // Test graph paras
   ASSERT_EQ(G.size(), 36);
@@ -23,7 +18,7 @@ TEST(Graph, single_port_load_graph)
   ASSERT_EQ(G.cache->node_id.size(), 1);
   ASSERT_EQ(G.cache->node_id[0].size(), 3);
   ASSERT_EQ(G.goals_queue.size(), 1);
-  ASSERT_EQ(G.goals_queue[0].size(), 11);
+  ASSERT_EQ(G.goals_queue[0].size(), 101);
 
   // Test normal block
   ASSERT_EQ(G.V[0]->neighbor.size(), 2);
@@ -47,15 +42,10 @@ TEST(Graph, single_port_load_graph)
   ASSERT_EQ(G.cache->node_id[0][0]->neighbor[1]->id, 3);
 }
 
-TEST(Graph, multi_port_load_graph)
+TEST(Graph, multi_port_load_graph_test)
 {
-  const std::string filename = "./assets/test/test-16-16-multi_port.map";
-  const std::string goal_real_file_path = "./data/order_data.csv";
-  auto test = spdlog::stderr_color_mt("test_multi_port");
-  auto MT = std::mt19937(0);
-  test->set_level(spdlog::level::debug);
-
-  auto G = Graph(filename, test, GoalGenerationType::MK, goal_real_file_path, 10, 5, 10, CacheType::LRU, 10, &MT);
+  Parser multi_port_load_graph_test_parser = Parser("./assets/test/test-16-16-multi_port.map", CacheType::LRU);
+  auto G = Graph(&multi_port_load_graph_test_parser);
 
   // Test graph paras
   ASSERT_EQ(G.size(), 196);
@@ -71,8 +61,8 @@ TEST(Graph, multi_port_load_graph)
   ASSERT_EQ(G.cache->node_id[0].size(), 6);
   ASSERT_EQ(G.cache->node_id[1].size(), 4);
   ASSERT_EQ(G.goals_queue.size(), 2);
-  ASSERT_EQ(G.goals_queue[0].size(), 6);
-  ASSERT_EQ(G.goals_queue[1].size(), 6);
+  ASSERT_EQ(G.goals_queue[0].size(), 51);
+  ASSERT_EQ(G.goals_queue[1].size(), 51);
 
   // Test normal block
   ASSERT_EQ(G.V[0]->neighbor.size(), 2);

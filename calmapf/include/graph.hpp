@@ -3,6 +3,7 @@
  */
 #pragma once
 #include "utils.hpp"
+#include "parser.hpp"
 #include "cache.hpp"
 #include <map>
 #include <boost/random/mersenne_twister.hpp>
@@ -16,18 +17,17 @@ struct Graph {
   std::vector<Vertices> cargo_vertices;
   std::vector<Goals> goals_queue;             // goals queue: length [ngoals], maximum [k] different goals in any [m] length sublist 
   std::vector<std::deque<int>> goals_delay;   // goals delay: prevent cargos is delayed by look ahead 
-  int delay_deadline;                         // delay deadline: cargo must be assigned when its delay is greater then deadline
 
   int width;                                  // grid width
   int height;                                 // grid height
   int group;                                  // group number
   GraphType type;                             // graph type
-  std::mt19937* randomSeed;
 
-  std::shared_ptr<spdlog::logger> logger;
+  Parser* parser;
+  std::shared_ptr<spdlog::logger> graph_console;
 
   // Instructor with cache
-  Graph(const std::string& filename, std::shared_ptr<spdlog::logger> _logger, GoalGenerationType goal_generation_type, std::string goal_real_file, uint goals_m, uint goals_k, uint ngoals, CacheType cache_type, int _delay_deadline, std::mt19937* _randomSeed = 0);
+  Graph(Parser* parser);
   // Destructor
   ~Graph();
 

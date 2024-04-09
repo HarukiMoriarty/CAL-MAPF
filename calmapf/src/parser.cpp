@@ -4,7 +4,9 @@
 #include "../include/parser.hpp"
 
 Parser::Parser(int argc, char* argv[]) {
-    parser_console = spdlog::stderr_color_mt("parser");
+    // Set up logger
+    if (auto existing_console = spdlog::get("parser"); existing_console != nullptr) parser_console = existing_console;
+    else parser_console = spdlog::stderr_color_mt("parser");
     parser_console->set_level(spdlog::level::info);
 
     // arguments definition
@@ -154,4 +156,35 @@ void Parser::_print() {
     parser_console->info("Visual file:      {}", output_visual_file);
     parser_console->info("Log short:        {}", short_log_format);
     parser_console->info("Debug:            {}", debug_log);
+}
+
+// Unit test only
+Parser::Parser(
+    std::string _map_file,
+    CacheType _cache_type) :
+    map_file(_map_file),
+    cache_type(_cache_type)
+{
+    // Set up logger
+    if (auto existing_console = spdlog::get("parser"); existing_console != nullptr) parser_console = existing_console;
+    else parser_console = spdlog::stderr_color_mt("parser");
+    parser_console->set_level(spdlog::level::debug);
+
+    look_ahead_num = 10;
+    delay_deadline_limit = 10;
+
+    num_goals = 100;
+
+    goals_gen_strategy = GoalGenerationType::MK;
+
+    goals_max_k = 20;
+    goals_max_m = 100;
+
+    num_agents = 4;
+
+    MT = std::mt19937(0);
+
+    time_limit_sec = 10;
+
+    _check();
 }

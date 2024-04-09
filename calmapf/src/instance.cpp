@@ -1,38 +1,23 @@
 #include "../include/instance.hpp"
 
-Instance::Instance(
-  const std::string& map_filename,
-  std::mt19937* MT,
-  std::shared_ptr<spdlog::logger> _logger,
-  GoalGenerationType goal_generation_type,
-  std::string goal_real_file,
-  CacheType cache_type,
-  int _look_ahead,
-  int delay_deadline,
-  const uint _nagents,
-  const uint _ngoals,
-  const uint goals_m,
-  const uint goals_k)
-  : graph(Graph(map_filename, _logger, goal_generation_type, goal_real_file, goals_m, goals_k, _ngoals, cache_type, delay_deadline, MT)),
-  starts(Config()),
-  goals(Config()),
-  nagents(_nagents),
-  ngoals(_ngoals),
-  look_ahead(_look_ahead),
-  logger(std::move(_logger))
+Instance::Instance(Parser* _parser) : graph(Graph(_parser)), parser(_parser)
 {
+  instance_console = spdlog::stderr_color_mt("instance");
+  if (parser->debug_log) instance_console->set_level(spdlog::level::debug);
+  else instance_console->set_level(spdlog::level::info);
+
   const auto K = graph.size();
   assign_agent_group();
 
   // set agents random start potition
   auto s_indexes = std::vector<int>(K);
   std::iota(s_indexes.begin(), s_indexes.end(), 0);
-  std::shuffle(s_indexes.begin(), s_indexes.end(), *MT);
+  std::shuffle(s_indexes.begin(), s_indexes.end(), parser->MT);
   int i = 0;
   while (true) {
     if (i >= K) return;
     starts.push_back(graph.V[s_indexes[i]]);
-    if (starts.size() == nagents) break;
+    if (starts.size() == parser->num_agents) break;
     ++i;
   }
 
@@ -45,15 +30,15 @@ Instance::Instance(
     cargo_goals.push_back(goal);
     bit_status.push_back(0);      // At the begining, the cache is empty, all agents should at status 0
     cargo_cnts.push_back(0);
-    if (goals.size() == nagents) break;
+    if (goals.size() == parser->num_agents) break;
     ++j;
   }
 }
 
 bool Instance::is_valid(const int verbose) const
 {
-  if (nagents != starts.size() || nagents != goals.size()) {
-    logger->error("invalid N, check instance nagents {} starts {} goals {}", nagents, starts.size(), goals.size());
+  if (parser->num_agents != starts.size() || parser->num_agents != goals.size()) {
+    instance_console->error("invalid N, check instance nagents {} starts {} goals {}", parser->num_agents, starts.size(), goals.size());
     return false;
   }
   return true;
@@ -65,12 +50,12 @@ uint Instance::update_on_reaching_goals_with_cache(
   uint& cache_access,
   uint& cache_hit)
 {
-  logger->debug("Old Goals: {}", goals);
-  logger->debug("Remain goals:  {}", remain_goals);
+  instance_console->debug("Old Goals: {}", goals);
+  instance_console->debug("Remain goals:  {}", remain_goals);
   int step = vertex_list.size() - 1;
-  logger->debug("Step length:   {}", step);
-  logger->debug("Solution ends: {}", vertex_list[step]);
-  logger->debug("Status before: {}", bit_status);
+  instance_console->debug("Step length:   {}", step);
+  instance_console->debug("Solution ends: {}", vertex_list[step]);
+  instance_console->debug("Status before: {}", bit_status);
   int reached_count = 0;
 
   // TODO: assign goals to closed free agents
@@ -87,7 +72,7 @@ uint Instance::update_on_reaching_goals_with_cache(
       // Agent has moved to cache cargo target.
       // Update cache lock info, directly move back to unloading port.
       if (bit_status[j] == 1) {
-        logger->debug(
+        instance_console->debug(
           "Agent {} status 1 -> status 4, reach cached cargo {} at cache "
           "block {}, return to unloading port",
           j, *cargo_goals[j], *goals[j]);
@@ -100,7 +85,7 @@ uint Instance::update_on_reaching_goals_with_cache(
       // Agent has bring uncached cargo back to cache.
       // Update cache, move to unloading port.
       else if (bit_status[j] == 2) {
-        logger->debug(
+        instance_console->debug(
           "Agent {} status 2 -> status 4, bring cargo {} to cache block "
           "{}, then return to unloading port",
           j, *cargo_goals[j], *goals[j]);
@@ -122,7 +107,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         // Cache is full, directly get back to unloading port.
         // ==> Status 3
         if (is_port(goal)) {
-          logger->debug(
+          instance_console->debug(
             "Agent {} status 0 -> status 3, reach warehouse cargo {}, cache "
             "is full, go back to unloading port",
             j, *cargo_goals[j]);
@@ -130,7 +115,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         }
         // Find empty cache block, go and insert cargo into cache, -> Status 2
         else {
-          logger->debug(
+          instance_console->debug(
             "Agent {} status 0 -> status 2, reach warehouse cargo {}, find "
             "cache block to insert, go to cache block {}",
             j, *cargo_goals[j], *goal);
@@ -146,7 +131,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         if (goal != cargo_goals[j]) {
           // We find cached cargo, go to cache
           // ==> Status 1
-          logger->debug(
+          instance_console->debug(
             "Agent {} cache hit while moving to ware house to get cargo. Go to cache {}, status 0 -> status 1",
             j, *cargo_goals[j], *goal);
           cache_access++;
@@ -173,17 +158,17 @@ uint Instance::update_on_reaching_goals_with_cache(
           cargo_cnts[j] = 0;
         }
 
-        logger->debug("Agent {} has bring cargo {} to unloading port", j, *cargo_goals[j]);
+        instance_console->debug("Agent {} has bring cargo {} to unloading port", j, *cargo_goals[j]);
 
         // Generate new cargo goal
-        Vertex* cargo = graph.get_next_goal(agent_group[j], look_ahead);
+        Vertex* cargo = graph.get_next_goal(agent_group[j], parser->look_ahead_num);
         cargo_goals[j] = cargo;
         Vertex* goal = graph.cache->try_cache_cargo(cargo);
 
         // Cache hit, go to cache to get cached cargo
         // ==> Status 1
         if (cargo != goal) {
-          logger->debug(
+          instance_console->debug(
             "Agent {} assigned with new cargo {}, cache hit. Go to cache {}, "
             "status 3 -> status 1",
             j, *cargo_goals[j], *goal);
@@ -194,7 +179,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         // Cache miss, go to warehouse to get cargo
         // ==> Status 0
         else {
-          logger->debug(
+          instance_console->debug(
             "Agent {} assigned with new cargo {}, cache miss. Go to "
             "warehouse, status 3 -> status 0",
             j, *cargo_goals[j]);
@@ -210,7 +195,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         Vertex* goal = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports);
         // Check if the cache is available during the period
         if (!is_port(goal)) {
-          logger->debug(
+          instance_console->debug(
             "Agent {} status 3 -> status 2, find cache block to insert during the moving, go to cache block {}",
             j, *cargo_goals[j], *goal);
           bit_status[j] = 2;
@@ -234,17 +219,17 @@ uint Instance::update_on_reaching_goals_with_cache(
           cargo_cnts[j] = 0;
         }
 
-        logger->debug("Agent {} has bring cargo {} to unloading port", j, *cargo_goals[j]);
+        instance_console->debug("Agent {} has bring cargo {} to unloading port", j, *cargo_goals[j]);
 
         // Generate new cargo goal
-        Vertex* cargo = graph.get_next_goal(agent_group[j], look_ahead);
+        Vertex* cargo = graph.get_next_goal(agent_group[j], parser->look_ahead_num);
         cargo_goals[j] = cargo;
         Vertex* goal = graph.cache->try_cache_cargo(cargo);
 
         // Cache hit, go to cache to get cached cargo
         // ==> Status 1
         if (cargo != goal) {
-          logger->debug(
+          instance_console->debug(
             "Agent {} assigned with new cargo {}, cache hit. Go to cache {}, "
             "status 4 -> status 1",
             j, *cargo_goals[j], *goal);
@@ -255,7 +240,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         // Cache miss, go to warehouse to get cargo
         // ==> Status 0
         else {
-          logger->debug(
+          instance_console->debug(
             "Agent {} assigned with new cargo {}, cache miss. Go to "
             "warehouse, status 4 -> status 0",
             j, *cargo_goals[j]);
@@ -269,9 +254,9 @@ uint Instance::update_on_reaching_goals_with_cache(
   }
 
   starts = vertex_list[step];
-  logger->debug("Ends: {}", vertex_list[step]);
-  logger->debug("New Goals: {}", goals);
-  logger->debug("Status after: {}", bit_status);
+  instance_console->debug("Ends: {}", vertex_list[step]);
+  instance_console->debug("New Goals: {}", goals);
+  instance_console->debug("Status after: {}", bit_status);
   return reached_count;
 }
 
@@ -279,10 +264,10 @@ uint Instance::update_on_reaching_goals_without_cache(
   std::vector<Config>& vertex_list,
   int remain_goals)
 {
-  logger->debug("Remain goals:  {}", remain_goals);
+  instance_console->debug("Remain goals:  {}", remain_goals);
   int step = vertex_list.size() - 1;
-  logger->debug("Step length:   {}", step);
-  logger->debug("Solution ends: {}", vertex_list[step]);
+  instance_console->debug("Step length:   {}", step);
+  instance_console->debug("Solution ends: {}", vertex_list[step]);
   int reached_count = 0;
 
   for (size_t j = 0; j < vertex_list[step].size(); ++j) {
@@ -311,12 +296,12 @@ uint Instance::update_on_reaching_goals_without_cache(
   }
 
   starts = vertex_list[step];
-  logger->debug("Ends: {}", starts);
+  instance_console->debug("Ends: {}", starts);
   return reached_count;
 }
 
 std::vector<uint> Instance::compute_percentiles() const {
-  logger->debug("cargo step size: {}", cargo_steps.size());
+  instance_console->debug("cargo step size: {}", cargo_steps.size());
   std::vector<uint> sorted_steps(cargo_steps);
 
   // Calculate indices for the percentiles
@@ -345,11 +330,11 @@ bool Instance::is_port(Vertex* vertex) const {
 
 void Instance::assign_agent_group() {
   // Ensure nagents is a multiple of ngroups
-  assert(nagents % graph.group == 0);
-  int per_group_agent = nagents / graph.group;
-  agent_group.resize(nagents);
+  assert(parser->num_agents % graph.group == 0);
+  int per_group_agent = parser->num_agents / graph.group;
+  agent_group.resize(parser->num_agents);
 
-  for (uint i = 0; i < nagents; ++i) {
+  for (uint i = 0; i < parser->num_agents; ++i) {
     // Assign each agent to a group
     agent_group[i] = i / per_group_agent;
   }

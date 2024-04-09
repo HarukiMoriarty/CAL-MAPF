@@ -12,7 +12,8 @@ int main(int argc, char* argv[])
   auto deadline = Deadline(parser.time_limit_sec * 1000);
 
   // generating instance
-  auto ins = Instance(parser.map_file, &parser.MT, console, parser.goals_gen_strategy, parser.real_dist_file_path, parser.cache_type, parser.look_ahead_num, parser.delay_deadline_limit, parser.num_agents, parser.num_goals, parser.goals_max_m, parser.goals_max_k);
+  auto ins = Instance(&parser);
+
   if (!ins.is_valid(1)) {
     console->error("instance is invalid!");
     return 1;
@@ -47,7 +48,7 @@ int main(int argc, char* argv[])
   uint cache_access = 0;
   uint batch_idx = 0;
   uint throughput_index_cnt = 0;
-  for (int i = 0; i < parser.num_goals; i += nagents_with_new_goals) {
+  for (uint i = 0; i < parser.num_goals; i += nagents_with_new_goals) {
     batch_idx++;
     // info output
     auto current_time = std::chrono::steady_clock::now();

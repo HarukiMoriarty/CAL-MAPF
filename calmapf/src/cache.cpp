@@ -3,18 +3,18 @@
 
 #include "../include/cache.hpp"
 
-Cache::Cache(
-    std::shared_ptr<spdlog::logger> _logger,
-    CacheType _cache_type,
-    std::mt19937* _randomSeed) :
-    logger(std::move(_logger)),
-    cache_type(_cache_type),
-    randomSeed(_randomSeed) {};
+Cache::Cache(Parser* _parser) : parser(_parser) {
+    // Set up logger
+    if (auto existing_console = spdlog::get("cache"); existing_console != nullptr) cache_console = existing_console;
+    else cache_console = spdlog::stderr_color_mt("cache");
+    if (parser->debug_log) cache_console->set_level(spdlog::level::debug);
+    else cache_console->set_level(spdlog::level::info);
+};
 
 Cache::~Cache() {};
 
 bool Cache::_update_cache_evited_policy_statistics(const uint group, const uint index, const bool fifo_option) {
-    switch (cache_type) {
+    switch (parser->cache_type) {
     case CacheType::LRU:
         LRU_cnt[group] = LRU_cnt[group] + 1;
         LRU[group][index] = LRU_cnt[group];
@@ -28,7 +28,7 @@ bool Cache::_update_cache_evited_policy_statistics(const uint group, const uint 
     case CacheType::RANDOM:
         break;
     default:
-        logger->error("Unreachable cache state!");
+        cache_console->error("Unreachable cache state!");
         exit(1);
     }
 
@@ -44,7 +44,7 @@ int Cache::_get_cache_evited_policy_index(const uint group) {
     int index = -1;
     std::vector<uint> candidate;
 
-    switch (cache_type) {
+    switch (parser->cache_type) {
     case CacheType::LRU:
         for (uint i = 0; i < LRU[group].size(); i++) {
             // If it's not locked and (it's the first element or the smallest so far)
@@ -75,10 +75,10 @@ int Cache::_get_cache_evited_policy_index(const uint group) {
             return index;
         }
 
-        index = get_random_int(randomSeed, 0, candidate.size() - 1);
+        index = get_random_int(&parser->MT, 0, candidate.size() - 1);
         return candidate[index];
     default:
-        logger->error("Unreachable cache state!");
+        cache_console->error("Unreachable cache state!");
         exit(1);
     }
 }
@@ -129,7 +129,7 @@ Vertex* Cache::try_cache_cargo(Vertex* cargo) {
 
     // If we can find cargo cached and is not reserved to be replaced , we go to cache and get it
     if (cache_index != -1 && bit_cache_insert_lock[cargo->group][cache_index] == 0) {
-        logger->debug("Cache hit! Agent will go {} to get cargo {}", *node_id[cargo->group][cache_index], *cargo);
+        cache_console->debug("Cache hit! Agent will go {} to get cargo {}", *node_id[cargo->group][cache_index], *cargo);
         // For here, we allow multiple agents lock on cache get position
         // It is impossible that a coming agent move cargo to this 
         // position while the cargo has already here
@@ -141,7 +141,7 @@ Vertex* Cache::try_cache_cargo(Vertex* cargo) {
     }
 
     // If we cannot find cargo cached, we directly go to warehouse
-    // logger->debug("Cache miss! Agent will directly to get cargo {}", *cargo);
+    // cache_console->debug("Cache miss! Agent will directly to get cargo {}", *cargo);
     return cargo;
 }
 
@@ -157,7 +157,7 @@ Vertex* Cache::try_insert_cache(Vertex* cargo, std::vector<Vertex*> port_list) {
     // TODO: optimization, can set a flag to skip this
     for (uint i = 0; i < is_empty[group].size(); i++) {
         if (is_empty[group][i]) {
-            logger->debug("Find an empty cache block with index {} {}", i, *node_id[group][i]);
+            cache_console->debug("Find an empty cache block with index {} {}", i, *node_id[group][i]);
             // We lock this position and update LRU info
             bit_cache_insert_lock[group][i] += 1;
             // Update coming cargo info
@@ -196,7 +196,7 @@ bool Cache::update_cargo_into_cache(Vertex* cargo, Vertex* cache_node) {
     assert(_is_cargo_in_coming_cache(cargo));
 
     // Update cache
-    logger->debug("Update cargo {} to cache block {}", *cargo, *cache_node);
+    cache_console->debug("Update cargo {} to cache block {}", *cargo, *cache_node);
     node_cargo[cache_node->group][cache_index] = cargo;
     bit_cache_insert_lock[cache_node->group][cache_index] -= 1;
     return true;
@@ -210,7 +210,7 @@ bool Cache::update_cargo_from_cache(Vertex* cargo, Vertex* cache_node) {
     assert(cargo_index != -1);
 
     // Simply release lock
-    logger->debug("Agents gets {} from cache {}", *cargo, *cache_node);
+    cache_console->debug("Agents gets {} from cache {}", *cargo, *cache_node);
     bit_cache_get_lock[cache_node->group][cache_index] -= 1;
     return true;
 }

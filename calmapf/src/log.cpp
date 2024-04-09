@@ -52,7 +52,7 @@ bool Log::is_feasible_solution(const Instance& ins, const int verbose)
   }
 
   for (size_t t = 1; t < step_solution.size(); ++t) {
-    for (size_t i = 0; i < ins.nagents; ++i) {
+    for (size_t i = 0; i < ins.parser->num_agents; ++i) {
       auto v_i_from = step_solution[t - 1][i];
       auto v_i_to = step_solution[t][i];
       // check connectivity
@@ -64,7 +64,7 @@ bool Log::is_feasible_solution(const Instance& ins, const int verbose)
       }
 
       // check conflicts
-      for (size_t j = i + 1; j < ins.nagents; ++j) {
+      for (size_t j = i + 1; j < ins.parser->num_agents; ++j) {
         auto v_j_from = step_solution[t - 1][j];
         auto v_j_to = step_solution[t][j];
         // vertex conflicts
@@ -126,7 +126,7 @@ int Log::get_sum_of_loss()
 int Log::get_makespan_lower_bound(const Instance& ins, DistTable& dist_table)
 {
   int c = 0;
-  for (size_t i = 0; i < ins.nagents; ++i) {
+  for (size_t i = 0; i < ins.parser->num_agents; ++i) {
     c = std::max(c, dist_table.get(i, ins.starts[i]));
   }
   return c;
@@ -136,7 +136,7 @@ int Log::get_sum_of_costs_lower_bound(const Instance& ins,
   DistTable& dist_table)
 {
   int c = 0;
-  for (size_t i = 0; i < ins.nagents; ++i) {
+  for (size_t i = 0; i < ins.parser->num_agents; ++i) {
     c += dist_table.get(i, ins.starts[i]);
   }
   return c;
@@ -184,7 +184,7 @@ void Log::make_step_log(const Instance& ins, const std::string& output_name,
   auto get_y = [&](int k) { return k / ins.graph.width; };
   std::ofstream log;
   log.open(output_name, std::ios::out);
-  log << "agents=" << ins.nagents << "\n";
+  log << "agents=" << ins.parser->num_agents << "\n";
   log << "map_file=" << map_recorded_name << "\n";
   log << "solver=planner\n";
   log << "solved=" << !step_solution.empty() << "\n";
@@ -199,18 +199,18 @@ void Log::make_step_log(const Instance& ins, const std::string& output_name,
   log << "seed=" << seed << "\n";
   if (log_short) return;
   log << "starts=";
-  for (size_t i = 0; i < ins.nagents; ++i) {
+  for (size_t i = 0; i < ins.parser->num_agents; ++i) {
     auto k = ins.starts[i]->index;
     log << "(" << get_x(k) << "," << get_y(k) << "),";
   }
   log << "\ngoals=";
-  for (size_t i = 0; i < ins.nagents; ++i) {
+  for (size_t i = 0; i < ins.parser->num_agents; ++i) {
     auto k = ins.goals[i]->index;
     log << "(" << get_x(k) << "," << get_y(k) << "),";
   }
   log << "\nsolution=\n";
   std::vector<std::vector<int> > new_sol(
-    ins.nagents, std::vector<int>(step_solution.size(), 0));
+    ins.parser->num_agents, std::vector<int>(step_solution.size(), 0));
   for (size_t t = 0; t < step_solution.size(); ++t) {
     log << t << ":";
     auto C = step_solution[t];
@@ -233,7 +233,7 @@ void Log::make_life_long_log(const Instance& ins, std::string visual_name)
   auto get_x = [&](int k) { return k % ins.graph.width; };
   auto get_y = [&](int k) { return k / ins.graph.width; };
   std::vector<std::vector<int> > new_sol(
-    ins.nagents, std::vector<int>(life_long_solution.size(), 0));
+    ins.parser->num_agents, std::vector<int>(life_long_solution.size(), 0));
 
   for (size_t t = 0; t < life_long_solution.size(); ++t) {
     auto C = life_long_solution[t];

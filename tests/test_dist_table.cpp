@@ -1,5 +1,4 @@
 #include <lacam.hpp>
-
 #include "gtest/gtest.h"
 
 TEST(dist_table, init)

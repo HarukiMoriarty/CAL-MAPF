@@ -17,7 +17,7 @@ struct Parser {
     int delay_deadline_limit;
 
     // Goal settings
-    int num_goals;
+    uint num_goals;
 
     std::string goals_gen_strategy_input;
     GoalGenerationType goals_gen_strategy;
@@ -27,7 +27,7 @@ struct Parser {
     std::string real_dist_file_path;
 
     // Instance settings
-    int num_agents;
+    uint num_agents;
 
     int random_seed;
     std::mt19937 MT;
@@ -52,4 +52,7 @@ struct Parser {
     void _post_parse();
     void _check();
     void _print();
+
+    // Unit test only
+    Parser(std::string _map_file, CacheType _cache_type);
 };

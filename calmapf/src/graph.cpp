@@ -110,32 +110,22 @@ GraphType Graph::get_graph_type(std::string type) {
     return GraphType::MULTI_PORT;
   }
   else {
-    logger->error("Invalid graph type!");
+    graph_console->error("Invalid graph type!");
     exit(1);
   }
 }
 
-Graph::Graph(
-  const std::string& filename,
-  std::shared_ptr<spdlog::logger> _logger,
-  GoalGenerationType goal_generation_type,
-  std::string goal_real_file,
-  uint goals_m,
-  uint goals_k,
-  uint ngoals,
-  CacheType cache_type,
-  int _delay_deadline,
-  std::mt19937* _randomSeed) :
-  V(Vertices()),
-  delay_deadline(_delay_deadline),
-  width(0),
-  height(0),
-  randomSeed(_randomSeed),
-  logger(_logger)
+Graph::Graph(Parser* _parser) : parser(_parser)
 {
-  std::ifstream file(filename);
+  // Set up logger
+  if (auto existing_console = spdlog::get("graph"); existing_console != nullptr) graph_console = existing_console;
+  else graph_console = spdlog::stderr_color_mt("graph");
+  if (parser->debug_log) graph_console->set_level(spdlog::level::debug);
+  else graph_console->set_level(spdlog::level::info);
+
+  std::ifstream file(parser->map_file);
   if (!file) {
-    logger->error("file {} is not found.", filename);
+    graph_console->error("file {} is not found.", parser->map_file);
     return;
   }
 
@@ -169,9 +159,9 @@ Graph::Graph(
   goals_queue.resize(group);
   goals_delay.resize(group);
 
-  if (is_cache(cache_type)) {
+  if (is_cache(parser->cache_type)) {
     // Generate cache
-    cache = new Cache(_logger, cache_type, randomSeed);
+    cache = new Cache(parser);
 
     // Tmp variables
     int y = 0;
@@ -180,7 +170,7 @@ Graph::Graph(
 
     // Read map
     while (getline(file, line)) {
-      logger->debug("{}", line);
+      graph_console->debug("{}", line);
       if (line.empty()) {
         // Stop reading if we reached specified group
         if (group_cnt >= group) break;
@@ -192,7 +182,7 @@ Graph::Graph(
         cache->bit_cache_get_lock.emplace_back(tmp_cache_node.size(), 0);
         cache->bit_cache_insert_lock.emplace_back(tmp_cache_node.size(), 0);
         cache->is_empty.emplace_back(tmp_cache_node.size(), true);
-        switch (cache_type) {
+        switch (parser->cache_type) {
         case CacheType::LRU:
           cache->LRU.emplace_back(tmp_cache_node.size(), 0);
           cache->LRU_cnt.resize(tmp_cache_node.size(), 0);
@@ -204,7 +194,7 @@ Graph::Graph(
         case CacheType::RANDOM:
           break;
         default:
-          logger->error("Unreachable cache type!");
+          graph_console->error("Unreachable cache type!");
           exit(1);
         }
 
@@ -308,7 +298,7 @@ Graph::Graph(
     }
 
     for (uint i = 0; i < cache->node_id.size(); i++) {
-      logger->info("Cache blocks:     {}", cache->node_id[i]);
+      graph_console->info("Cache blocks:     {}", cache->node_id[i]);
     }
   }
   else {
@@ -412,11 +402,11 @@ Graph::Graph(
     }
   }
 
-  logger->info("Unloading ports:  {}", unloading_ports);
-  logger->info("Generating goals...");
+  graph_console->info("Unloading ports:  {}", unloading_ports);
+  graph_console->info("Generating goals...");
 
   for (int i = 0; i < group; i++) {
-    fill_goals_list(goal_generation_type, goal_real_file, i, goals_m, goals_k, ngoals);
+    fill_goals_list(parser->goals_gen_strategy, parser->real_dist_file_path, i, parser->goals_max_m, parser->goals_max_k, parser->num_goals);
   }
 }
 
@@ -426,7 +416,7 @@ Vertex* Graph::random_target_vertex(int group) {
   // Assert not empty
   assert(!cargo_vertices[group].empty());
 
-  int index = get_random_int(randomSeed, 0, cargo_vertices[group].size() - 1);
+  int index = get_random_int(&parser->MT, 0, cargo_vertices[group].size() - 1);
   auto it = cargo_vertices[group].begin();
   std::advance(it, index);
   return *it;
@@ -441,7 +431,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
 
     while (goals_queue[group_index].size() < (uint(ngoals / group) + 1)) {
       if (goals_generated % 1000 == 0) {
-        logger->info("Generated {:5}/{:5} goals.", goals_generated, ngoals);
+        graph_console->info("Generated {:5}/{:5} goals.", goals_generated, ngoals);
       }
 
       Vertex* selected_goal = random_target_vertex(group_index);
@@ -457,7 +447,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
       }
 
       if (diff_goals.size() == goals_k) {
-        int index = get_random_int(randomSeed, 0, goals_k - 1);
+        int index = get_random_int(&parser->MT, 0, goals_k - 1);
         auto it = diff_goals.begin();
         std::advance(it, index);
         selected_goal = *it;
@@ -484,7 +474,7 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
     std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group_index].size());
     boost::random::discrete_distribution<> dist(item_prob);
     for (uint i = 0; i < (ngoals / uint(group) + 1); i++) {
-      goals_queue[group_index].push_back(cargo_vertices[group_index][dist(*randomSeed)]);
+      goals_queue[group_index].push_back(cargo_vertices[group_index][dist(parser->MT)]);
       goals_delay[group_index].push_back(0);
     }
   }
@@ -493,12 +483,12 @@ void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string
     prob_v.resize(cargo_vertices[group_index].size());
     boost::random::discrete_distribution<> dist(prob_v);
     for (uint i = 0; i < (ngoals / uint(group) + 1); i++) {
-      goals_queue[group_index].push_back(cargo_vertices[group_index][dist(*randomSeed)]);
+      goals_queue[group_index].push_back(cargo_vertices[group_index][dist(parser->MT)]);
       goals_delay[group_index].push_back(0);
     }
   }
 
-  logger->debug("Group {} goals {}", group, goals_queue[group_index].size());
+  graph_console->debug("Group {} goals {}", group, goals_queue[group_index].size());
 }
 
 Vertex* Graph::get_next_goal(int group, int look_ahead) {
@@ -521,7 +511,7 @@ Vertex* Graph::get_next_goal(int group, int look_ahead) {
     temp_goals.push_back(current_goal);
     temp_goals_delay.push_back(current_goal_delay);
 
-    if (cache != nullptr && (cache->look_ahead_cache(current_goal) || current_goal_delay >= delay_deadline)) {
+    if (cache != nullptr && (cache->look_ahead_cache(current_goal) || current_goal_delay >= parser->delay_deadline_limit)) {
       cache_hit_index = i;
       break;
     }

@@ -3,10 +3,8 @@
 
 TEST(Cache, cache_LRU_single_port_test)
 {
-    auto test = spdlog::stderr_color_mt("test_LRU_cache");
-    test->set_level(spdlog::level::debug);
-
-    Cache cache(test, CacheType::LRU);
+    Parser cache_LRU_single_port_test_parser = Parser("", CacheType::LRU);
+    Cache cache(&cache_LRU_single_port_test_parser);
 
     /* Graph
         TTTTTTTTT
@@ -118,10 +116,8 @@ TEST(Cache, cache_LRU_single_port_test)
 
 TEST(Cache, cache_FIFO_single_port_test)
 {
-    auto test = spdlog::stderr_color_mt("test_FIFO_cache");
-    test->set_level(spdlog::level::debug);
-
-    Cache cache(test, CacheType::FIFO);
+    Parser cache_FIFO_single_port_test = Parser("", CacheType::FIFO);
+    Cache cache(&cache_FIFO_single_port_test);
 
     /* Graph
         TTTTTTTTT

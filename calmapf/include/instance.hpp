@@ -2,9 +2,9 @@
  * instance definition
  */
 #pragma once
-#include <random>
 
 #include "graph.hpp"
+#include "parser.hpp"
 #include "utils.hpp"
 
 struct Instance {
@@ -12,7 +12,6 @@ struct Instance {
   Config starts;                  // initial configuration
   Config goals;                   // goal configuration, can be in warehouse block/cache block
   Config cargo_goals;             // cargo goal configuration
-
   std::vector<uint> cargo_cnts;   // each cargo cnts, help variable for cargo_steps
   std::vector<uint> cargo_steps;  // each cargo steps 
 
@@ -24,28 +23,12 @@ struct Instance {
   // 4 -> cache get cargo, going back to unloading port
   std::vector<uint> bit_status;
 
-  const uint nagents;             // number of agents
   std::vector<int> agent_group;   // agents group
-  const uint ngoals;              // number of goals
-  const int look_ahead;
-
-  std::shared_ptr<spdlog::logger> logger;
+  Parser* parser;                 // paras
+  std::shared_ptr<spdlog::logger> instance_console;
 
   // Instructor
-  Instance(
-    const std::string& map_filename,
-    std::mt19937* MT,
-    std::shared_ptr<spdlog::logger> _logger,
-    GoalGenerationType goals_generation_type,
-    std::string goal_real_file,
-    CacheType cache_type,
-    int look_ahead = 1,
-    int delay_deadline = 1,
-    const uint _nagents = 1,
-    const uint _ngoals = 1,
-    const uint goals_m = 0,
-    const uint goals_k = 0
-  );
+  Instance(Parser* parser);
   // Destructor
   ~Instance() {}
 
