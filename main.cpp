@@ -4,42 +4,21 @@
 
 int main(int argc, char* argv[])
 {
+  // Set up logger
   auto console = spdlog::stderr_color_mt("console");
   console->set_level(spdlog::level::info);
 
+  // Initialization
+  // Parser
   Parser parser(argc, argv);
-
+  // Deadline
   auto deadline = Deadline(parser.time_limit_sec * 1000);
-
-  // generating instance
+  // Instance
   auto ins = Instance(&parser);
-
-  if (!ins.is_valid(1)) {
-    console->error("instance is invalid!");
-    return 1;
-  }
-
-  // initliaze log system
-  Log log(console);
-  // initliaze info timer
+  // Log
+  Log log(&parser);
+  // Timer
   auto timer = std::chrono::steady_clock::now();
-
-  // prepare for throughput record
-  std::ofstream throughput_file(parser.output_throughput_file, std::ios::app);
-  if (!throughput_file.is_open()) {
-    std::cerr << "Failed to open file: " << parser.output_throughput_file << std::endl;
-    return 1;
-  }
-  throughput_file << parser.map_file << ","
-    << parser.cache_type_input << ","
-    << parser.goals_gen_strategy_input << ","
-    << parser.num_goals << ","
-    << parser.num_agents << ","
-    << parser.random_seed << ","
-    << parser.verbose_level << ","
-    << parser.time_limit_sec << ","
-    << parser.goals_max_m << ","
-    << parser.goals_max_k << ",";
 
   // solving
   uint nagents_with_new_goals = 0;
@@ -73,10 +52,7 @@ int main(int argc, char* argv[])
       timer = std::chrono::steady_clock::now();
     }
 
-    double throughput = double(i) / double(makespan);
-    for (; throughput_index_cnt < makespan; throughput_index_cnt += 200) {
-      throughput_file << throughput << ",";
-    }
+    log.make_throughput_log(i, throughput_index_cnt, makespan);
 
     // ternimal log
     console->debug(
@@ -94,30 +70,7 @@ int main(int argc, char* argv[])
 
     // failure
     if (solution.empty()) {
-      std::ofstream csv_file(parser.output_csv_file, std::ios::app);
-
-      if (!csv_file.is_open()) {
-        std::cerr << "Failed to open file: " << parser.output_csv_file << std::endl;
-        return 1;
-      }
-
-      csv_file << parser.map_file << ","
-        << parser.cache_type_input << ","
-        << parser.look_ahead_num << ","
-        << parser.delay_deadline_limit << ","
-        << parser.goals_gen_strategy_input << ","
-        << parser.num_goals << ","
-        << parser.num_agents << ","
-        << parser.random_seed << ","
-        << parser.verbose_level << ","
-        << parser.time_limit_sec << ","
-        << parser.goals_max_m << ","
-        << parser.goals_max_k << ","
-        << "fail to solve"
-        << std::endl;
-
-      csv_file.close();
-
+      log.make_csv_log(.0, 0, nullptr, true);
       console->error("failed to solve");
       return 1;
     }
@@ -161,39 +114,6 @@ int main(int argc, char* argv[])
     console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", parser.num_goals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
   log.make_life_long_log(ins, parser.output_visual_file);
-
-
-  std::ofstream csv_file(parser.output_csv_file, std::ios::app);
-
-  if (!csv_file.is_open()) {
-    std::cerr << "Failed to open file: " << parser.output_csv_file << std::endl;
-    return 1;
-  }
-
-  csv_file << parser.map_file << ","
-    << parser.cache_type_input << ","
-    << parser.look_ahead_num << ","
-    << parser.delay_deadline_limit << ","
-    << parser.goals_gen_strategy_input << ","
-    << parser.num_goals << ","
-    << parser.num_agents << ","
-    << parser.random_seed << ","
-    << parser.verbose_level << ","
-    << parser.time_limit_sec << ","
-    << parser.goals_max_m << ","
-    << parser.goals_max_k << ","
-    << total_cache_rate << ","
-    << makespan << ","
-    << step_percentiles[0] << ","
-    << step_percentiles[2] << ","
-    << step_percentiles[6]
-    << std::endl;
-
-  csv_file.close();
-
-  double total_throughput = double(parser.num_goals) / double(makespan);
-  throughput_file << total_throughput << std::endl;
-  throughput_file.close();
-
+  log.make_csv_log(total_cache_rate, makespan, &step_percentiles, false);
   return 0;
 }

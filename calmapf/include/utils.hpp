@@ -25,20 +25,6 @@
 
 using Time = std::chrono::steady_clock;
 
-// Lacam info struct, keep it here for now
-template <typename Head, typename... Tail>
-void info(const int level, const int verbose, Head&& head, Tail&&... tail);
-
-void info(const int level, const int verbose);
-
-template <typename Head, typename... Tail>
-void info(const int level, const int verbose, Head&& head, Tail&&... tail)
-{
-  if (verbose < level) return;
-  std::cout << head;
-  info(level, verbose, std::forward<Tail>(tail)...);
-}
-
 // Time manager
 struct Deadline {
   Time::time_point t_s;

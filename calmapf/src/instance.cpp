@@ -33,15 +33,17 @@ Instance::Instance(Parser* _parser) : graph(Graph(_parser)), parser(_parser)
     if (goals.size() == parser->num_agents) break;
     ++j;
   }
+
+  // check instance
+  _is_valid(parser->verbose_level);
 }
 
-bool Instance::is_valid(const int verbose) const
+void Instance::_is_valid(int verbose)
 {
   if (parser->num_agents != starts.size() || parser->num_agents != goals.size()) {
     instance_console->error("invalid N, check instance nagents {} starts {} goals {}", parser->num_agents, starts.size(), goals.size());
-    return false;
+    exit(1);
   }
-  return true;
 }
 
 uint Instance::update_on_reaching_goals_with_cache(

@@ -2,10 +2,50 @@
 
 #include "../include/dist_table.hpp"
 
-Log::Log(std::shared_ptr<spdlog::logger> _logger) : logger(std::move(_logger))
+Log::Log(Parser* parser)
 {
+  log_console = spdlog::stderr_color_mt("log");
+  if (parser->debug_log) log_console->set_level(spdlog::level::debug);
+  else log_console->set_level(spdlog::level::info);
+
+  // Open throughput file
+  throughput_output_handler.open(parser->output_throughput_file, std::ios::app);
+  if (!throughput_output_handler.is_open()) {
+    log_console->error("Failed to open file: {}", parser->output_throughput_file);
+    exit(1);
+  }
+  throughput_output_handler << parser->map_file << "," << parser->cache_type_input << "," << parser->goals_gen_strategy_input << "," << parser->num_goals << "," << parser->num_agents << "," << parser->random_seed << "," << parser->verbose_level << "," << parser->time_limit_sec << "," << parser->goals_max_m << "," << parser->goals_max_k << ",";
+
+  // Open csv file
+  csv_output_handler.open(parser->output_csv_file, std::ios::app);
+  if (!csv_output_handler.is_open()) {
+    log_console->error("Failed to open file: {}", parser->output_csv_file);
+    exit(1);
+  }
+  csv_output_handler << parser->map_file << "," << parser->cache_type_input << "," << parser->look_ahead_num << "," << parser->delay_deadline_limit << "," << parser->goals_gen_strategy_input << "," << parser->num_goals << "," << parser->num_agents << "," << parser->random_seed << "," << parser->verbose_level << "," << parser->time_limit_sec << "," << parser->goals_max_m << "," << parser->goals_max_k << ",";
+
+  // Open step file
+  step_output_handler.open(parser->output_step_file, std::ios::app);
+  if (!step_output_handler.is_open()) {
+    log_console->error("Failed to open file: {}", parser->output_step_file);
+    exit(1);
+  }
+
+  // Open visual file
+  visual_output_handler.open(parser->output_step_file, std::ios::app);
+  if (!visual_output_handler.is_open()) {
+    log_console->error("Failed to open file: {}", parser->output_visual_file);
+    exit(1);
+  }
 }
-Log::~Log() {}
+
+Log::~Log() {
+  // Close file
+  throughput_output_handler.close();
+  csv_output_handler.close();
+  step_output_handler.close();
+  visual_output_handler.close();
+}
 
 bool Log::update_solution(Solution& solution, std::vector<uint> bit_status)
 {
@@ -39,15 +79,16 @@ bool Log::update_solution(Solution& solution, std::vector<uint> bit_status)
 bool Log::is_feasible_solution(const Instance& ins, const int verbose)
 {
   if (step_solution.empty()) return true;
-  // check start locations
+
+  // Check start locations
   if (!is_same_config(step_solution.front(), ins.starts)) {
-    info(1, verbose, "invalid starts");
+    log_console->error("invalid starts");
     return false;
   }
 
-  // check goal locations
+  // Check goal locations
   if (!is_reach_at_least_one(step_solution.back(), ins.goals)) {
-    info(1, verbose, "invalid goals");
+    log_console->error("invalid goals");
     return false;
   }
 
@@ -55,26 +96,25 @@ bool Log::is_feasible_solution(const Instance& ins, const int verbose)
     for (size_t i = 0; i < ins.parser->num_agents; ++i) {
       auto v_i_from = step_solution[t - 1][i];
       auto v_i_to = step_solution[t][i];
-      // check connectivity
+      // Check connectivity
       if (v_i_from != v_i_to &&
-        std::find(v_i_to->neighbor.begin(), v_i_to->neighbor.end(),
-          v_i_from) == v_i_to->neighbor.end()) {
-        info(1, verbose, "invalid move");
+        std::find(v_i_to->neighbor.begin(), v_i_to->neighbor.end(), v_i_from) == v_i_to->neighbor.end()) {
+        log_console->error("invalid move");
         return false;
       }
 
-      // check conflicts
+      // Check conflicts
       for (size_t j = i + 1; j < ins.parser->num_agents; ++j) {
         auto v_j_from = step_solution[t - 1][j];
         auto v_j_to = step_solution[t][j];
-        // vertex conflicts
+        // Vertex conflicts
         if (v_j_to == v_i_to) {
-          info(1, verbose, "vertex conflict");
+          log_console->error("vertex conflict");
           return false;
         }
-        // swap conflicts
+        // Swap conflicts
         if (v_j_to == v_i_from && v_j_from == v_i_to) {
-          info(1, verbose, "edge conflict");
+          log_console->error("edge conflict");
           return false;
         }
       }
@@ -146,6 +186,7 @@ void Log::print_stats(const int verbose, const Instance& ins,
   const double comp_time_ms)
 {
   auto ceil = [](float x) { return std::ceil(x * 100) / 100; };
+
   auto dist_table = DistTable(ins);
   const auto makespan = get_makespan();
   const auto makespan_lb = get_makespan_lower_bound(ins, dist_table);
@@ -153,7 +194,7 @@ void Log::print_stats(const int verbose, const Instance& ins,
   const auto sum_of_costs_lb = get_sum_of_costs_lower_bound(ins, dist_table);
   const auto sum_of_loss = get_sum_of_loss();
 
-  logger->debug(
+  log_console->debug(
     "solved: {} ms\tmakespan: {} (lb={}, ub={})\tsum_of_costs: {} (lb={}, "
     "ub={})\tsum_of_loss: {} (lb={}, ub={})",
     comp_time_ms, makespan, makespan_lb,
@@ -182,58 +223,55 @@ void Log::make_step_log(const Instance& ins, const std::string& output_name,
   // log for visualizer
   auto get_x = [&](int k) { return k % ins.graph.width; };
   auto get_y = [&](int k) { return k / ins.graph.width; };
-  std::ofstream log;
-  log.open(output_name, std::ios::out);
-  log << "agents=" << ins.parser->num_agents << "\n";
-  log << "map_file=" << map_recorded_name << "\n";
-  log << "solver=planner\n";
-  log << "solved=" << !step_solution.empty() << "\n";
-  log << "soc=" << get_sum_of_costs() << "\n";
-  log << "soc_lb=" << get_sum_of_costs_lower_bound(ins, dist_table) << "\n";
-  log << "makespan=" << get_makespan() << "\n";
-  log << "makespan_lb=" << get_makespan_lower_bound(ins, dist_table) << "\n";
-  log << "sum_of_loss=" << get_sum_of_loss() << "\n";
-  log << "sum_of_loss_lb=" << get_sum_of_costs_lower_bound(ins, dist_table)
-    << "\n";
-  log << "comp_time=" << comp_time_ms << "\n";
-  log << "seed=" << seed << "\n";
+
+  step_output_handler << "agents=" << ins.parser->num_agents << std::endl
+    << "map_file=" << map_recorded_name << std::endl
+    << "solver=planner" << std::endl
+    << "solved=" << !step_solution.empty() << std::endl
+    << "soc=" << get_sum_of_costs() << std::endl
+    << "soc_lb=" << get_sum_of_costs_lower_bound(ins, dist_table) << std::endl
+    << "makespan=" << get_makespan() << std::endl
+    << "makespan_lb=" << get_makespan_lower_bound(ins, dist_table) << std::endl
+    << "sum_of_loss=" << get_sum_of_loss() << std::endl
+    << "sum_of_loss_lb=" << get_sum_of_costs_lower_bound(ins, dist_table) << std::endl
+    << "comp_time=" << comp_time_ms << std::endl
+    << "seed=" << seed << std::endl;
+
   if (log_short) return;
-  log << "starts=";
+  step_output_handler << "starts=";
   for (size_t i = 0; i < ins.parser->num_agents; ++i) {
     auto k = ins.starts[i]->index;
-    log << "(" << get_x(k) << "," << get_y(k) << "),";
+    step_output_handler << "(" << get_x(k) << "," << get_y(k) << "),";
   }
-  log << "\ngoals=";
+  step_output_handler << std::endl << "goals=";
   for (size_t i = 0; i < ins.parser->num_agents; ++i) {
     auto k = ins.goals[i]->index;
-    log << "(" << get_x(k) << "," << get_y(k) << "),";
+    step_output_handler << "(" << get_x(k) << "," << get_y(k) << "),";
   }
-  log << "\nsolution=\n";
-  std::vector<std::vector<int> > new_sol(
-    ins.parser->num_agents, std::vector<int>(step_solution.size(), 0));
+  step_output_handler << std::endl << "solution=" << std::endl;
+
+  std::vector<std::vector<int> > new_sol(ins.parser->num_agents, std::vector<int>(step_solution.size(), 0));
   for (size_t t = 0; t < step_solution.size(); ++t) {
-    log << t << ":";
+    step_output_handler << t << ":";
     auto C = step_solution[t];
     int idx = 0;
     for (auto v : C) {
-      log << "(" << get_x(v->index) << "," << get_y(v->index) << "),";
+      step_output_handler << "(" << get_x(v->index) << "," << get_y(v->index) << "),";
       new_sol[idx][t] = v->index;
       idx++;
     }
-    log << "\n";
+    step_output_handler << std::endl;
   }
-  log.close();
 }
 
 void Log::make_life_long_log(const Instance& ins, std::string visual_name)
 {
-  logger->info("life long solution size: {}, bit status size: {}", life_long_solution.size(), bit_status_log.size());
-  std::cout << visual_name << std::endl;
+  log_console->info("life long solution size: {}, bit status size: {}", life_long_solution.size(), bit_status_log.size());
+
   auto dist_table = DistTable(ins);
   auto get_x = [&](int k) { return k % ins.graph.width; };
   auto get_y = [&](int k) { return k / ins.graph.width; };
-  std::vector<std::vector<int> > new_sol(
-    ins.parser->num_agents, std::vector<int>(life_long_solution.size(), 0));
+  std::vector<std::vector<int> > new_sol(ins.parser->num_agents, std::vector<int>(life_long_solution.size(), 0));
 
   for (size_t t = 0; t < life_long_solution.size(); ++t) {
     auto C = life_long_solution[t];
@@ -244,18 +282,35 @@ void Log::make_life_long_log(const Instance& ins, std::string visual_name)
     }
   }
 
-  std::ofstream out2(visual_name);
-  out2 << "width: " << ins.graph.width << std::endl;
-  out2 << "height: " << ins.graph.height << std::endl;
-  out2 << "schedule: " << std::endl;
+  visual_output_handler << "width: " << ins.graph.width << std::endl
+    << "height: " << ins.graph.height << std::endl
+    << "schedule: " << std::endl;
+
   for (size_t a = 0; a < new_sol.size(); ++a) {
-    out2 << "  agent" << a << ":" << std::endl;
+    visual_output_handler << "  agent" << a << ":" << std::endl;
     for (size_t t = 0; t < new_sol[a].size(); ++t) {
-      out2 << "    - x: " << get_y(new_sol[a][t]) << std::endl
+      visual_output_handler << "    - x: " << get_y(new_sol[a][t]) << std::endl
         << "      y: " << get_x(new_sol[a][t]) << std::endl
         << "      t: " << t << std::endl
         << "      s: " << bit_status_log[t][a] << std::endl;
     }
   }
-  out2.close();
+}
+
+void Log::make_throughput_log(uint index, uint start_cnt, uint make_span)
+{
+  double throughput = double(index) / double(make_span);
+  for (; start_cnt < make_span; start_cnt += 200) {
+    throughput_output_handler << throughput << ",";
+  }
+}
+
+void Log::make_csv_log(double cache_hit_rate, uint make_span, std::vector<uint>* step_percentiles, bool failure)
+{
+  if (!failure) {
+    csv_output_handler << cache_hit_rate << "," << make_span << "," << (*step_percentiles)[0] << "," << (*step_percentiles)[2] << "," << (*step_percentiles)[6] << std::endl;
+  }
+  else {
+    csv_output_handler << "fail to solve" << std::endl;
+  }
 }
