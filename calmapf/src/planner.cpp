@@ -54,12 +54,10 @@ Node::~Node()
   }
 }
 
-Planner::Planner(const Instance* _ins, const Deadline* _deadline,
-  std::mt19937* _MT, int _verbose)
+Planner::Planner(const Instance* _ins, const Deadline* _deadline, std::mt19937* _MT)
   : ins(_ins),
   deadline(_deadline),
   MT(_MT),
-  verbose(_verbose),
   N(ins->parser->num_agents),
   V_size(ins->graph.size()),
   D(DistTable(ins)),
@@ -255,10 +253,10 @@ bool Planner::funcPIBT(Agent* ai)
   return false;
 }
 
-Solution solve(const Instance& ins, const int verbose, const Deadline* deadline,
+Solution solve(const Instance& ins, const Deadline* deadline,
   std::mt19937* MT)
 {
   // info(1, verbose, "elapsed:", elapsed_ms(deadline), "ms\tpre-processing");
-  auto planner = Planner(&ins, deadline, MT, verbose);
+  auto planner = Planner(&ins, deadline, MT);
   return planner.solve();
 }

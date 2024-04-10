@@ -49,7 +49,6 @@ struct Planner {
   const Instance* ins;
   const Deadline* deadline;
   std::mt19937* MT;
-  const int verbose;
 
   // solver utils
   const int N;  // number of agents
@@ -61,13 +60,11 @@ struct Planner {
   Agents occupied_now;   // for quick collision checking
   Agents occupied_next;  // for quick collision checking
 
-  Planner(const Instance* _ins, const Deadline* _deadline, std::mt19937* _MT,
-    int _verbose = 0);
+  Planner(const Instance* _ins, const Deadline* _deadline, std::mt19937* _MT);
   Solution solve();
   bool get_new_config(Node* S, Constraint* M);
   bool funcPIBT(Agent* ai);
 };
 
 // main function
-Solution solve(const Instance& ins, const int verbose = 0,
-  const Deadline* deadline = nullptr, std::mt19937* MT = nullptr);
+Solution solve(const Instance& ins, const Deadline* deadline = nullptr, std::mt19937* MT = nullptr);

@@ -14,7 +14,7 @@ Log::Log(Parser* parser)
     log_console->error("Failed to open file: {}", parser->output_throughput_file);
     exit(1);
   }
-  throughput_output_handler << parser->map_file << "," << parser->cache_type_input << "," << parser->goals_gen_strategy_input << "," << parser->num_goals << "," << parser->num_agents << "," << parser->random_seed << "," << parser->verbose_level << "," << parser->time_limit_sec << "," << parser->goals_max_m << "," << parser->goals_max_k << ",";
+  throughput_output_handler << parser->map_file << "," << parser->cache_type_input << "," << parser->goals_gen_strategy_input << "," << parser->num_goals << "," << parser->num_agents << "," << parser->random_seed << "," << "," << parser->time_limit_sec << "," << parser->goals_max_m << "," << parser->goals_max_k << ",";
 
   // Open csv file
   csv_output_handler.open(parser->output_csv_file, std::ios::app);
@@ -22,7 +22,7 @@ Log::Log(Parser* parser)
     log_console->error("Failed to open file: {}", parser->output_csv_file);
     exit(1);
   }
-  csv_output_handler << parser->map_file << "," << parser->cache_type_input << "," << parser->look_ahead_num << "," << parser->delay_deadline_limit << "," << parser->goals_gen_strategy_input << "," << parser->num_goals << "," << parser->num_agents << "," << parser->random_seed << "," << parser->verbose_level << "," << parser->time_limit_sec << "," << parser->goals_max_m << "," << parser->goals_max_k << ",";
+  csv_output_handler << parser->map_file << "," << parser->cache_type_input << "," << parser->look_ahead_num << "," << parser->delay_deadline_limit << "," << parser->goals_gen_strategy_input << "," << parser->num_goals << "," << parser->num_agents << "," << parser->random_seed << "," << "," << parser->time_limit_sec << "," << parser->goals_max_m << "," << parser->goals_max_k << ",";
 
   // Open step file
   step_output_handler.open(parser->output_step_file, std::ios::app);
@@ -76,7 +76,7 @@ bool Log::update_solution(Solution& solution, std::vector<uint> bit_status)
   return true;
 }
 
-bool Log::is_feasible_solution(const Instance& ins, const int verbose)
+bool Log::is_feasible_solution(const Instance& ins)
 {
   if (step_solution.empty()) return true;
 
@@ -182,8 +182,7 @@ int Log::get_sum_of_costs_lower_bound(const Instance& ins,
   return c;
 }
 
-void Log::print_stats(const int verbose, const Instance& ins,
-  const double comp_time_ms)
+void Log::print_stats(const Instance& ins, const double comp_time_ms)
 {
   auto ceil = [](float x) { return std::ceil(x * 100) / 100; };
 

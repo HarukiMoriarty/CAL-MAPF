@@ -41,7 +41,6 @@ struct Parser {
     std::string output_visual_file;
 
     // Log settings
-    int verbose_level;
     bool short_log_format;
     bool debug_log;
 

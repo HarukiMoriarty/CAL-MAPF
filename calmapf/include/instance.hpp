@@ -35,7 +35,7 @@ struct Instance {
   // Assign agent group
   void assign_agent_group();
   // Simple feasibility check of instance
-  void _is_valid(int verbose = 0);
+  void _is_valid();
   // Check if reached port
   bool is_port(Vertex* port) const;
 

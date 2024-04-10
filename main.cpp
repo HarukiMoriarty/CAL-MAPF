@@ -54,47 +54,46 @@ int main(int argc, char* argv[])
 
     log.make_throughput_log(i, throughput_index_cnt, makespan);
 
-    // ternimal log
-    console->debug(
-      "----------------------------------------------------------------------"
-      "----------------------------------------");
+    // Ternimal log
+    console->debug("--------------------------------------------------------------------------------------------------------------");
     console->debug("STEP:   {}", makespan);
     console->debug("STARTS: {}", ins.starts);
     console->debug("GOALS:  {}", ins.goals);
 
-    // reset time clock
+    // Reset time clock
     assert(deadline.reset());
 
-    auto solution = solve(ins, parser.verbose_level - 1, &deadline, &parser.MT);
+    // Get solution
+    auto solution = solve(ins, &deadline, &parser.MT);
     const auto comp_time_ms = deadline.elapsed_ms();
 
-    // failure
+    // Failure
     if (solution.empty()) {
       log.make_csv_log(.0, 0, nullptr, true);
       console->error("failed to solve");
       return 1;
     }
 
-    // update step solution
+    // Update step solution
     if (!log.update_solution(solution, ins.bit_status)) {
       console->error("Update step solution fails!");
       return 1;
     }
 
-    // check feasibility
-    if (!log.is_feasible_solution(ins, parser.verbose_level)) {
+    // Check feasibility
+    if (!log.is_feasible_solution(ins)) {
       console->error("invalid solution");
       return 1;
     }
 
-    // statistics
+    // Statistics
     makespan += (solution.size() - 1);
 
-    // post processing
-    log.print_stats(parser.verbose_level, ins, comp_time_ms);
+    // Post processing
+    log.print_stats(ins, comp_time_ms);
     log.make_step_log(ins, parser.output_step_file, comp_time_ms, parser.map_file, parser.random_seed, parser.short_log_format);
 
-    // assign new goals
+    // Assign new goals
     if (is_cache(parser.cache_type)) {
       nagents_with_new_goals = ins.update_on_reaching_goals_with_cache(solution, parser.num_goals - i, cache_access, cache_hit);
     }
@@ -103,6 +102,7 @@ int main(int argc, char* argv[])
     }
     console->debug("Reached Goals: {}", nagents_with_new_goals);
   }
+
   // Get percentiles
   std::vector<uint> step_percentiles = ins.compute_percentiles();
 
@@ -113,7 +113,9 @@ int main(int argc, char* argv[])
   else {
     console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", parser.num_goals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
+
   log.make_life_long_log(ins, parser.output_visual_file);
   log.make_csv_log(total_cache_rate, makespan, &step_percentiles, false);
+
   return 0;
 }

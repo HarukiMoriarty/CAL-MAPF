@@ -23,7 +23,6 @@ Parser::Parser(int argc, char* argv[]) {
     program.add_argument("-na", "--num-agents").help("Number of agents to use.").required();
     program.add_argument("-ac", "--agents-capacity").help("Capacity of agents.").default_value(std::string("100"));
     program.add_argument("-rs", "--random-seed").help("Seed for random number generation. Defaults to 0.").default_value(std::string("0"));
-    program.add_argument("-vl", "--verbose-level").help("Set the verbose logging level. Defaults to 0.").default_value(std::string("0"));
     program.add_argument("-tls", "--time-limit-sec").help("Time limit in seconds. Defaults to 10.").default_value(std::string("10"));
     program.add_argument("-osrf", "--output-step-file").help("Path to the step result output file. Defaults to './result/step_result.txt'.").default_value(std::string("./result/step_result.txt"));
     program.add_argument("-ocf", "--output-csv-file").help("Path to the throughput output file. Defaults to './result/throughput.csv'.").default_value(std::string("./result/result.csv"));
@@ -61,7 +60,6 @@ Parser::Parser(int argc, char* argv[]) {
     output_throughput_file = program.get<std::string>("output-throughput-file");
     output_visual_file = program.get<std::string>("visual-output-file");
 
-    verbose_level = std::stoi(program.get<std::string>("verbose-level"));
     short_log_format = program.get<bool>("short-log-format");
     debug_log = program.get<bool>("debug-log");
 
@@ -148,7 +146,6 @@ void Parser::_print() {
         parser_console->info("Real disy file:   {}", real_dist_file_path);
     }
     parser_console->info("Seed:             {}", random_seed);
-    parser_console->info("Verbose:          {}", verbose_level);
     parser_console->info("Time limit (sec): {}", time_limit_sec);
     parser_console->info("Step file:        {}", output_step_file);
     parser_console->info("CSV file:         {}", output_csv_file);
