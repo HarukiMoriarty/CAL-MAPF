@@ -32,7 +32,7 @@ Log::Log(Parser* parser)
   }
 
   // Open visual file
-  visual_output_handler.open(parser->output_step_file, std::ios::app);
+  visual_output_handler.open(parser->output_visual_file, std::ios::app);
   if (!visual_output_handler.is_open()) {
     log_console->error("Failed to open file: {}", parser->output_visual_file);
     exit(1);
