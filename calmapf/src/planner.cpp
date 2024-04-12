@@ -1,8 +1,6 @@
 #include "../include/planner.hpp"
 
-Constraint::Constraint() : who(std::vector<int>()), where(Vertices()), depth(0)
-{
-}
+Constraint::Constraint() : who(std::vector<int>()), where(Vertices()), depth(0) {}
 
 Constraint::Constraint(Constraint* parent, int i, Vertex* v)
   : who(parent->who), where(parent->where), depth(parent->depth + 1)
@@ -66,8 +64,7 @@ Planner::Planner(const Instance* _ins, const Deadline* _deadline, std::mt19937* 
   A(Agents(N, nullptr)),
   occupied_now(Agents(V_size, nullptr)),
   occupied_next(Agents(V_size, nullptr))
-{
-}
+{}
 
 Solution Planner::solve()
 {

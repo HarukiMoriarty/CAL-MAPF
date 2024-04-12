@@ -47,7 +47,7 @@ Log::~Log() {
   visual_output_handler.close();
 }
 
-bool Log::update_solution(Solution& solution, std::vector<uint> bit_status)
+void Log::update_solution(Solution& solution, std::vector<uint> bit_status)
 {
   // Update step solution
   step_solution = solution;
@@ -73,7 +73,7 @@ bool Log::update_solution(Solution& solution, std::vector<uint> bit_status)
     }
   }
 
-  return true;
+  return;
 }
 
 bool Log::is_feasible_solution(const Instance& ins)
@@ -296,10 +296,10 @@ void Log::make_life_long_log(const Instance& ins, std::string visual_name)
   }
 }
 
-void Log::make_throughput_log(uint index, uint start_cnt, uint make_span)
+void Log::make_throughput_log(uint index, uint* start_cnt, uint make_span)
 {
   double throughput = double(index) / double(make_span);
-  for (; start_cnt < make_span; start_cnt += 200) {
+  for (; *start_cnt < make_span; *start_cnt += 200) {
     throughput_output_handler << throughput << ",";
   }
 }

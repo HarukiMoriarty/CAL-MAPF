@@ -31,28 +31,21 @@ int main(int argc, char* argv[])
     batch_idx++;
     // info output
     auto current_time = std::chrono::steady_clock::now();
-    auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-      current_time - timer)
-      .count();
+    auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - timer).count();
 
     if (!parser.debug_log && batch_idx % 100 == 0 && cache_access > 0 && is_cache(parser.cache_type)) {
       double cacheRate = static_cast<double>(cache_hit) / cache_access * 100.0;
-      console->info(
-        "Elapsed Time: {:5}ms   |   Goals Reached: {:5}   |   Cache Hit Rate: "
-        "{:2.2f}%    |   Steps Used: {:5}",
-        elapsed_time, i, cacheRate, makespan);
+      console->info("Elapsed Time: {:5}ms   |   Goals Reached: {:5}   |   Cache Hit Rate: {:2.2f}%    |   Steps Used: {:5}", elapsed_time, i, cacheRate, makespan);
       // Reset the timer
       timer = std::chrono::steady_clock::now();
     }
     else if (!parser.debug_log && batch_idx % 100 == 0 && !is_cache(parser.cache_type)) {
-      console->info(
-        "Elapsed Time: {:5}ms   |   Goals Reached: {:5}   |   Steps Used: {:5}",
-        elapsed_time, i, makespan);
+      console->info("Elapsed Time: {:5}ms   |   Goals Reached: {:5}   |   Steps Used: {:5}", elapsed_time, i, makespan);
       // Reset the timer
       timer = std::chrono::steady_clock::now();
     }
 
-    log.make_throughput_log(i, throughput_index_cnt, makespan);
+    log.make_throughput_log(i, &throughput_index_cnt, makespan);
 
     // Ternimal log
     console->debug("--------------------------------------------------------------------------------------------------------------");
@@ -75,10 +68,7 @@ int main(int argc, char* argv[])
     }
 
     // Update step solution
-    if (!log.update_solution(solution, ins.bit_status)) {
-      console->error("Update step solution fails!");
-      return 1;
-    }
+    log.update_solution(solution, ins.bit_status);
 
     // Check feasibility
     if (!log.is_feasible_solution(ins)) {
