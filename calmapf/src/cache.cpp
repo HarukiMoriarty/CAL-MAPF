@@ -221,6 +221,13 @@ bool Cache::update_cargo_from_cache(Vertex* cargo, Vertex* cache_node) {
     // Simply release lock
     cache_console->debug("Agents gets {} from cache {}", *cargo, *cache_node);
     bit_cache_get_lock[cache_node->group][cache_index] -= 1;
+
+    // If the cache block has no more cargoes and is not locked, set it as empty
+    if (bit_cache_get_lock[cache_node->group][cache_index] == 0 && node_cargo_num[cache_node->group][cache_index] == 0)
+    {
+        is_empty[cache_node->group][cache_index] = true;
+    }
+
     return true;
 }
 
