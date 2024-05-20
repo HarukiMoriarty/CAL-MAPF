@@ -21,7 +21,7 @@ Parser::Parser(int argc, char* argv[]) {
     program.add_argument("-gmm", "--goals-max-m").help("Maximum 'k' different goals in 'm' segments of all goals. Defaults to 100.").default_value(std::string("100"));
     program.add_argument("-rdfp", "--real-dist-file-path").help("Path to the real distribution data file. Defaults to './data/order_data.csv'.").default_value(std::string("./data/order_data.csv"));
     program.add_argument("-na", "--num-agents").help("Number of agents to use.").required();
-    program.add_argument("-ac", "--agents-capacity").help("Capacity of agents.").default_value(std::string("100"));
+    program.add_argument("-ac", "--agent-capacity").help("Capacity of agents.").default_value(std::string("100"));
     program.add_argument("-rs", "--random-seed").help("Seed for random number generation. Defaults to 0.").default_value(std::string("0"));
     program.add_argument("-tls", "--time-limit-sec").help("Time limit in seconds. Defaults to 10.").default_value(std::string("10"));
     program.add_argument("-osrf", "--output-step-file").help("Path to the step result output file. Defaults to './result/step_result.txt'.").default_value(std::string("./result/step_result.txt"));
