@@ -52,6 +52,8 @@ Parser::Parser(int argc, char* argv[]) {
     real_dist_file_path = program.get<std::string>("real-dist-file-path");
 
     num_agents = std::stoi(program.get<std::string>("num-agents"));
+    agent_capacity = std::stoi(program.get<std::string>("agent-capacity"));
+
     random_seed = std::stoi(program.get<std::string>("random-seed"));
     time_limit_sec = std::stoi(program.get<std::string>("time-limit-sec"));
 

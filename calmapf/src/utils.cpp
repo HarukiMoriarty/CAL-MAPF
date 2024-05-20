@@ -2,12 +2,7 @@
 
 Vertex::Vertex(int _id, int _index, int _width, int _group) : id(_id), index(_index), width(_width), group(_group), neighbor(Vertices()) {}
 
-void info(const int level, const int verbose) { std::cout << std::endl; }
-
-Deadline::Deadline(double _time_limit_ms)
-  : t_s(Time::now()), time_limit_ms(_time_limit_ms)
-{
-}
+Deadline::Deadline(double _time_limit_ms) : t_s(Time::now()), time_limit_ms(_time_limit_ms) {}
 
 bool Deadline::reset() {
   t_s = Time::now();
@@ -16,15 +11,12 @@ bool Deadline::reset() {
 
 double Deadline::elapsed_ms() const
 {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(Time::now() -
-    t_s)
-    .count();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(Time::now() - t_s).count();
 }
 
 double Deadline::elapsed_ns() const
 {
-  return std::chrono::duration_cast<std::chrono::nanoseconds>(Time::now() - t_s)
-    .count();
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(Time::now() - t_s).count();
 }
 
 double elapsed_ms(const Deadline* deadline)

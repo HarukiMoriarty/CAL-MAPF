@@ -11,6 +11,7 @@ struct Cache {
     std::vector<Vertices> node_cargo;
     std::vector<Vertices> node_id;
     std::vector<Vertices> node_coming_cargo;
+    std::vector<std::vector<uint>> node_cargo_num;
     std::vector<std::vector<uint>> bit_cache_get_lock;
     std::vector<std::vector<uint>> bit_cache_insert_lock;
     std::vector<std::vector<bool>> is_empty;

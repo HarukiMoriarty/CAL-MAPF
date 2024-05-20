@@ -67,6 +67,12 @@ TEST(Cache, cache_LRU_single_port_test)
 
     cache.LRU_cnt.push_back(3);
 
+    std::vector<uint> tmp_cache_node_cargo_num;
+    tmp_cache_node_cargo_num.push_back(10);
+    tmp_cache_node_cargo_num.push_back(10);
+    tmp_cache_node_cargo_num.push_back(10);
+    cache.node_cargo_num.push_back(tmp_cache_node_cargo_num);
+
     std::vector<uint> tmp_cache_bit_cache_get_lock;
     tmp_cache_bit_cache_get_lock.push_back(0);
     tmp_cache_bit_cache_get_lock.push_back(0);
@@ -84,7 +90,7 @@ TEST(Cache, cache_LRU_single_port_test)
 
     // Test `_get_cargo_in_cache_index(Vertex* cargo)`
     ASSERT_EQ(0, cache._get_cargo_in_cache_position(cargo_1));
-    ASSERT_EQ(-1, cache._get_cargo_in_cache_position(cargo_5));
+    ASSERT_EQ(-2, cache._get_cargo_in_cache_position(cargo_5));
 
     // Test `_is_cargo_in_coming_cache(Vertex* cargo)`
     ASSERT_EQ(true, cache._is_cargo_in_coming_cache(cargo_4));
@@ -180,6 +186,12 @@ TEST(Cache, cache_FIFO_single_port_test)
 
     cache.FIFO_cnt.push_back(3);
 
+    std::vector<uint> tmp_cache_node_cargo_num;
+    tmp_cache_node_cargo_num.push_back(10);
+    tmp_cache_node_cargo_num.push_back(10);
+    tmp_cache_node_cargo_num.push_back(10);
+    cache.node_cargo_num.push_back(tmp_cache_node_cargo_num);
+
     std::vector<uint> tmp_cache_bit_cache_get_lock;
     tmp_cache_bit_cache_get_lock.push_back(0);
     tmp_cache_bit_cache_get_lock.push_back(0);
@@ -197,7 +209,7 @@ TEST(Cache, cache_FIFO_single_port_test)
 
     // Test `_get_cargo_in_cache_index(Vertex* cargo)`
     ASSERT_EQ(0, cache._get_cargo_in_cache_position(cargo_1));
-    ASSERT_EQ(-1, cache._get_cargo_in_cache_position(cargo_5));
+    ASSERT_EQ(-2, cache._get_cargo_in_cache_position(cargo_5));
 
     // Test `_is_cargo_in_coming_cache(Vertex* cargo)`
     ASSERT_EQ(true, cache._is_cargo_in_coming_cache(cargo_4));

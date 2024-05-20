@@ -26,9 +26,11 @@ struct Parser {
     uint goals_max_m;
     std::string real_dist_file_path;
 
-    // Instance settings
+    // Agent settings
     uint num_agents;
+    uint agent_capacity;
 
+    // Instance settings
     int random_seed;
     std::mt19937 MT;
 
