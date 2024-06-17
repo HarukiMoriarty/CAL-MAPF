@@ -79,11 +79,11 @@ TEST(Cache, cache_LRU_single_port_test)
     tmp_cache_bit_cache_get_lock.push_back(0);
     cache.bit_cache_get_lock.push_back(tmp_cache_bit_cache_get_lock);
 
-    std::vector<uint> tmp_cache_bit_cache_insert_lock;
-    tmp_cache_bit_cache_insert_lock.push_back(0);
-    tmp_cache_bit_cache_insert_lock.push_back(0);
-    tmp_cache_bit_cache_insert_lock.push_back(0);
-    cache.bit_cache_insert_lock.push_back(tmp_cache_bit_cache_insert_lock);
+    std::vector<uint> tmp_cache_bit_cache_insert_or_clear_lock;
+    tmp_cache_bit_cache_insert_or_clear_lock.push_back(0);
+    tmp_cache_bit_cache_insert_or_clear_lock.push_back(0);
+    tmp_cache_bit_cache_insert_or_clear_lock.push_back(0);
+    cache.bit_cache_insert_or_clear_lock.push_back(tmp_cache_bit_cache_insert_or_clear_lock);
 
     // Test `_get_cache_block_in_cache_index(Vertex* block)`
     ASSERT_EQ(0, cache._get_cache_block_in_cache_position(cache_1));
@@ -99,21 +99,21 @@ TEST(Cache, cache_LRU_single_port_test)
     // Test `try_cache_cargo(Vertex* cargo)`
     // We will get lock block cache_1 with cargo_1
     // LRU_cnt: (4, 2, 1)
-    ASSERT_EQ(cache_1, cache.try_cache_cargo(cargo_1));
-    ASSERT_EQ(cargo_5, cache.try_cache_cargo(cargo_5));
+    ASSERT_EQ(CacheAccessResult(true, cache_1), cache.try_cache_cargo(cargo_1));
+    ASSERT_EQ(CacheAccessResult(false, cargo_5), cache.try_cache_cargo(cargo_5));
     ASSERT_EQ(4, cache.LRU[0][0]);
 
     // Test `try_insert_cache(Vertex* cargo)`
     // We will insert lock block cache_3 with cargo_5
-    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_1, port_list));
-    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_4, port_list));
+    ASSERT_EQ(CacheAccessResult(false, unloading_port), cache.try_insert_cache(cargo_1, port_list[0]));
+    ASSERT_EQ(CacheAccessResult(false, unloading_port), cache.try_insert_cache(cargo_4, port_list[0]));
     ASSERT_EQ(2, cache._get_cache_evited_policy_index(0));
-    ASSERT_EQ(cache_3, cache.try_insert_cache(cargo_5, port_list));
+    ASSERT_EQ(CacheAccessResult(true, cache_3), cache.try_insert_cache(cargo_5, port_list[0]));
     ASSERT_EQ(cargo_5, cache.node_coming_cargo[0][2]);
 
     // Test `update_cargo_into_cache`
     ASSERT_EQ(true, cache.update_cargo_into_cache(cargo_5, cache_3));
-    ASSERT_EQ(0, cache.bit_cache_insert_lock[0][2]);
+    ASSERT_EQ(0, cache.bit_cache_insert_or_clear_lock[0][2]);
 
     // Test `update_cargo_from_cache`
     ASSERT_EQ(true, cache.update_cargo_from_cache(cargo_1, cache_1));
@@ -198,11 +198,11 @@ TEST(Cache, cache_FIFO_single_port_test)
     tmp_cache_bit_cache_get_lock.push_back(0);
     cache.bit_cache_get_lock.push_back(tmp_cache_bit_cache_get_lock);
 
-    std::vector<uint> tmp_cache_bit_cache_insert_lock;
-    tmp_cache_bit_cache_insert_lock.push_back(0);
-    tmp_cache_bit_cache_insert_lock.push_back(0);
-    tmp_cache_bit_cache_insert_lock.push_back(0);
-    cache.bit_cache_insert_lock.push_back(tmp_cache_bit_cache_insert_lock);
+    std::vector<uint> tmp_cache_bit_cache_insert_or_clear_lock;
+    tmp_cache_bit_cache_insert_or_clear_lock.push_back(0);
+    tmp_cache_bit_cache_insert_or_clear_lock.push_back(0);
+    tmp_cache_bit_cache_insert_or_clear_lock.push_back(0);
+    cache.bit_cache_insert_or_clear_lock.push_back(tmp_cache_bit_cache_insert_or_clear_lock);
 
     // Test `_get_cache_block_in_cache_index(Vertex* block)`
     ASSERT_EQ(0, cache._get_cache_block_in_cache_position(cache_1));
@@ -218,21 +218,21 @@ TEST(Cache, cache_FIFO_single_port_test)
     // Test `try_cache_cargo(Vertex* cargo)`
     // We will get lock block cache_1 with cargo_1
     // FIFO_cnt: (3, 2, 1)
-    ASSERT_EQ(cache_1, cache.try_cache_cargo(cargo_1));
-    ASSERT_EQ(cargo_5, cache.try_cache_cargo(cargo_5));
+    ASSERT_EQ(CacheAccessResult(true, cache_1), cache.try_cache_cargo(cargo_1));
+    ASSERT_EQ(CacheAccessResult(false, cargo_5), cache.try_cache_cargo(cargo_5));
     ASSERT_EQ(3, cache.FIFO[0][0]);
 
     // Test `try_insert_cache(Vertex* cargo)`
     // We will insert lock block cache_3 with cargo_5
-    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_1, port_list));
-    ASSERT_EQ(unloading_port, cache.try_insert_cache(cargo_4, port_list));
+    ASSERT_EQ(CacheAccessResult(false, unloading_port), cache.try_insert_cache(cargo_1, port_list[0]));
+    ASSERT_EQ(CacheAccessResult(false, unloading_port), cache.try_insert_cache(cargo_4, port_list[0]));
     ASSERT_EQ(2, cache._get_cache_evited_policy_index(0));
-    ASSERT_EQ(cache_3, cache.try_insert_cache(cargo_5, port_list));
+    ASSERT_EQ(CacheAccessResult(true, cache_3), cache.try_insert_cache(cargo_5, port_list[0]));
     ASSERT_EQ(cargo_5, cache.node_coming_cargo[0][2]);
 
     // Test `update_cargo_into_cache`
     ASSERT_EQ(true, cache.update_cargo_into_cache(cargo_5, cache_3));
-    ASSERT_EQ(0, cache.bit_cache_insert_lock[0][2]);
+    ASSERT_EQ(0, cache.bit_cache_insert_or_clear_lock[0][2]);
 
     // Test `update_cargo_from_cache`
     ASSERT_EQ(true, cache.update_cargo_from_cache(cargo_1, cache_1));

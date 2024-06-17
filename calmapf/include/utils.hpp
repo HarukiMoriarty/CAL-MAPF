@@ -127,6 +127,17 @@ inline bool is_cache(CacheType cache_type) {
   return cache_type != CacheType::NONE;
 }
 
+// Cache access result
+struct CacheAccessResult {
+  bool result;
+  Vertex* goal;
+
+  inline CacheAccessResult(bool _result, Vertex* _goal) : result(_result), goal(_goal) {};
+  bool operator==(const CacheAccessResult& other) const {
+    return result == other.result && goal == other.goal;
+  }
+};
+
 template <>
 struct fmt::formatter<std::vector<unsigned int>> {
   // Presentation format: 'f' - fixed, 'e' - exponential.

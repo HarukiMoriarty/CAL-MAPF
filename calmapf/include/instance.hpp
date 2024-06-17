@@ -11,16 +11,19 @@ struct Instance {
   Graph graph;                    // graph
   Config starts;                  // initial configuration
   Config goals;                   // goal configuration, can be in warehouse block/cache block
+  Config old_goals;               // old goal configuration, used for trash collection
   Config cargo_goals;             // cargo goal configuration
   std::vector<uint> cargo_cnts;   // each cargo cnts, help variable for cargo_steps
   std::vector<uint> cargo_steps;  // each cargo steps 
 
   // Status control:
-  // 0 -> cache miss, going for warehouse get cargo
-  // 1 -> cache hit, going for cache get cargo
-  // 2 -> warehouse get cargo, find empty block, going back to insert cache
-  // 3 -> warehouse get cargo, cannot find empty block, going back to unloading port
-  // 4 -> cache get cargo, going back to unloading port
+  // 0 -> cache miss, need trash collection, going to cache to clear position (add clear lock)
+  // 1 -> cache miss, no need to trash collection / has moved trash back to warehouse, going to fetch cargo
+  // 2 -> cache hit, going to cache to get cargo (add read lock)
+  // 3 -> cache cleared, going to warehouse to bring back cargo
+  // 4 -> warehouse get cargo, find empty block, going back to insert cache (get write lock)
+  // 5 -> warehouse get cargo, cannot find empty block, going back to unloading port
+  // 6 -> cache get cargo from cache, going back to unloading port
   std::vector<uint> bit_status;
 
   std::vector<int> agent_group;   // agents group

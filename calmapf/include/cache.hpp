@@ -13,7 +13,7 @@ struct Cache {
     std::vector<Vertices> node_coming_cargo;
     std::vector<std::vector<uint>> node_cargo_num;
     std::vector<std::vector<uint>> bit_cache_get_lock;
-    std::vector<std::vector<uint>> bit_cache_insert_lock;
+    std::vector<std::vector<uint>> bit_cache_insert_or_clear_lock;
     std::vector<std::vector<bool>> is_empty;
 
     // LRU paras
@@ -73,6 +73,13 @@ struct Cache {
     bool _is_cargo_in_coming_cache(Vertex* cargo);
 
     /**
+     * @brief Check if cache need a garbage collection.
+     * @param group cache block group number
+     * @return true if actually needs, or false.
+    */
+    bool _is_garbage_collection(int group);
+
+    /**
      * @brief Check if the cargo is in cache. Used for look ahead protocol.
      * @param cargo A pointer to the Vertex representing the cargo.
      * @return true if the cargo is in cache, or false.
@@ -82,21 +89,25 @@ struct Cache {
     /**
      * @brief Attempt to find a cached cargo and retrieve associated goals.
      * @param cargo A pointer to the Vertex representing the cargo.
-     * @return A pointer to the Vertex of the cargo in the cache,
-     *         or to the Vertex in the warehouse if not cached.
+     * @return A CacheAccessResult, true if we find cached cargo, false otherwise.
      */
-    Vertex* try_cache_cargo(Vertex* cargo);
+    CacheAccessResult try_cache_cargo(Vertex* cargo);
 
     /**
-     * @brief Find a cache block for cargo that is not cached (cache-miss) and set goals.
-     *        This is triggered when a cargo cache miss occurs.
+     * @brief Find an empty cache block for cargo that is not cached (cache-miss) and insert.
      * @param cargo A pointer to the Vertex representing the cargo.
-     * @param port_list A pointer to the vector of Vertex representing the unloading ports.
-     * @return A pointer to the Vertex representing the cache block, or
-     *         the unloading port Vertex if a suitable block cannot be found or
-     *         if the cargo is already cached (in a multi-agent context).
-     */
-    Vertex* try_insert_cache(Vertex* cargo, std::vector<Vertex*> port_list);
+     * @param unloading_port A pointer to the unloading port.
+     * @return A CacheAccessResult, true if we find one, false otherwise.
+    */
+    CacheAccessResult try_insert_cache(Vertex* cargo, Vertex* unloading_port);
+
+    /**
+     * @brief Attempt to find a garbage to free one cache block.
+     * @param cargo A pointer to the Vertex representing the cargo.
+     * @return A CacheAccessResult, true if need to do garbage collection
+     *         and actually find one to collect, false otherwise.
+    */
+    CacheAccessResult try_cache_garbage_collection(Vertex* cargo);
 
     /**
      * @brief Insert cargo into cache. This occurs when an agent brings a
@@ -116,4 +127,12 @@ struct Cache {
      */
     bool update_cargo_from_cache(Vertex* cargo, Vertex* cache_node);
 
+    /**
+     * @brief Release lock when clear a cached cargo.
+     *        This occurs when an agent reaches the cached garbage cargo.
+     * @param cargo A pointer to the Vertex representing the garbage cargo.
+     * @param cache_node A pointer to the vertex representing the cache goal.
+     * @return true if succecssful, false otherwise.
+    */
+    bool clear_cargo_from_cache(Vertex* cargo, Vertex* cache_node);
 };

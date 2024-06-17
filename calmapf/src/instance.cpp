@@ -28,6 +28,7 @@ Instance::Instance(Parser* _parser) : graph(Graph(_parser)), parser(_parser)
     Vertex* goal = graph.get_next_goal(agent_group[j]);
     goals.push_back(goal);
     cargo_goals.push_back(goal);
+    old_goals.push_back(goal);
     bit_status.push_back(0);      // At the begining, the cache is empty, all agents should at status 0
     cargo_cnts.push_back(0);
     if (goals.size() == parser->num_agents) break;
@@ -70,29 +71,36 @@ uint Instance::update_on_reaching_goals_with_cache(
   // First, we check vertex which status will released lock
   for (size_t j = 0; j < vertex_list[step].size(); ++j) {
     if (vertex_list[step][j] == goals[j]) {
-      // Status 1 finished. ==> Status 4
+      // Status 0 finished. ==> Status 3
+      if (bit_status[j] == 0) {
+        instance_console->debug("Agent {} status 0 -> status 3, reached cargo {} at cahe block {}, cleared", j, *cargo_goals[j], *goals[j]);
+        bit_status[j] = 3;
+        assert(graph.cache->clear_cargo_from_cache(cargo_goals[j], goals[j]));
+        goals[j] = old_goals[j];
+      }
+      // Status 2 finished. ==> Status 6
       // Agent has moved to cache cargo target.
       // Update cache lock info, directly move back to unloading port.
-      if (bit_status[j] == 1) {
+      else if (bit_status[j] == 2) {
         instance_console->debug(
-          "Agent {} status 1 -> status 4, reach cached cargo {} at cache "
+          "Agent {} status 2 -> status 6, reach cached cargo {} at cache "
           "block {}, return to unloading port",
           j, *cargo_goals[j], *goals[j]);
-        bit_status[j] = 4;
-        graph.cache->update_cargo_from_cache(cargo_goals[j], goals[j]);
+        bit_status[j] = 6;
+        assert(graph.cache->update_cargo_from_cache(cargo_goals[j], goals[j]));
         // Update goals and steps
         goals[j] = graph.unloading_ports[cargo_goals[j]->group];
       }
-      // Status 2 finished. ==> Status 4
+      // Status 4 finished. ==> Status 6
       // Agent has bring uncached cargo back to cache.
       // Update cache, move to unloading port.
-      else if (bit_status[j] == 2) {
+      else if (bit_status[j] == 4) {
         instance_console->debug(
-          "Agent {} status 2 -> status 4, bring cargo {} to cache block "
+          "Agent {} status 4 -> status 6, bring cargo {} to cache block "
           "{}, then return to unloading port",
           j, *cargo_goals[j], *goals[j]);
-        bit_status[j] = 4;
-        graph.cache->update_cargo_into_cache(cargo_goals[j], goals[j]);
+        bit_status[j] = 6;
+        assert(graph.cache->update_cargo_into_cache(cargo_goals[j], goals[j]));
         // Update goals and steps
         goals[j] = graph.unloading_ports[cargo_goals[j]->group];
       }
@@ -101,52 +109,61 @@ uint Instance::update_on_reaching_goals_with_cache(
 
   // Second, we check vertex which status will require (or not require) lock
   for (size_t j = 0; j < vertex_list[step].size(); ++j) {
-    if (bit_status[j] == 0) {
-      // Status 0 finished.
+    if (bit_status[j] == 1) {
+      // Status 1 finished.
       if (vertex_list[step][j] == goals[j]) {
         // Agent has moved to warehouse cargo target
-        Vertex* goal = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports);
+        CacheAccessResult result = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports[agent_group[j]]);
         // Cache is full, directly get back to unloading port.
-        // ==> Status 3
-        if (is_port(goal)) {
+        // ==> Status 6
+        if (!result.result) {
           instance_console->debug(
-            "Agent {} status 0 -> status 3, reach warehouse cargo {}, cache "
+            "Agent {} status 1 -> status 5, reach warehouse cargo {}, cache "
             "is full, go back to unloading port",
             j, *cargo_goals[j]);
-          bit_status[j] = 3;
+          bit_status[j] = 6;
         }
-        // Find empty cache block, go and insert cargo into cache, -> Status 2
+        // Find empty cache block, go and insert cargo into cache, -> Status 5
         else {
           instance_console->debug(
-            "Agent {} status 0 -> status 2, reach warehouse cargo {}, find "
+            "Agent {} status 1 -> status 4, reach warehouse cargo {}, find "
             "cache block to insert, go to cache block {}",
-            j, *cargo_goals[j], *goal);
-          bit_status[j] = 2;
+            j, *cargo_goals[j], *result.goal);
+          bit_status[j] = 5;
         }
-        // Update goals and steps
-        goals[j] = goal;
+        // Update goals
+        goals[j] = result.goal;
       }
-      // Status 0 yet not finished
+      // Status 1 yet not finished
       else {
         // Check if the cargo has been cached during the period
-        Vertex* goal = graph.cache->try_cache_cargo(cargo_goals[j]);
-        if (goal != cargo_goals[j]) {
+        CacheAccessResult result = graph.cache->try_cache_cargo(cargo_goals[j]);
+        if (result.result) {
           // We find cached cargo, go to cache
-          // ==> Status 1
+          // ==> Status 2
           instance_console->debug(
-            "Agent {} cache hit while moving to ware house to get cargo. Go to cache {}, status 0 -> status 1",
-            j, *cargo_goals[j], *goal);
+            "Agent {} cache hit while moving to ware house to get cargo. Go to cache {}, status 1 -> status 2",
+            j, *cargo_goals[j], *result.goal);
           cache_access++;
           cache_hit++;
           bit_status[j] = 1;
           // Update goals and steps
-          goals[j] = goal;
+          goals[j] = result.goal;
         }
         // Otherwise, we do nothing for cache miss situation
       }
     }
     else if (bit_status[j] == 3) {
       // Status 3 finished.
+      // Agent has moved trash back to warehouse, going to fetch cargo
+      if (vertex_list[step][j] == goals[j]) {
+        instance_console->debug("Agent {} status 3 -> status 1, brought trash {} back to warehouse, go to fetch cargo {}", j, *goals[j], *cargo_goals[j]);
+        bit_status[j] = 1;
+        goals[j] = cargo_goals[j];
+      }
+    }
+    else if (bit_status[j] == 5) {
+      // Status 5 finished.
       // Agent has back to unloading port, assigned with new cargo target
       if (vertex_list[step][j] == goals[j]) {
         if (remain_goals > 0) {
@@ -165,50 +182,62 @@ uint Instance::update_on_reaching_goals_with_cache(
         // Generate new cargo goal
         Vertex* cargo = graph.get_next_goal(agent_group[j], parser->look_ahead_num);
         cargo_goals[j] = cargo;
-        Vertex* goal = graph.cache->try_cache_cargo(cargo);
+        CacheAccessResult result = graph.cache->try_cache_cargo(cargo);
 
         // Cache hit, go to cache to get cached cargo
-        // ==> Status 1
-        if (cargo != goal) {
+        // ==> Status 2
+        if (result.result) {
           instance_console->debug(
             "Agent {} assigned with new cargo {}, cache hit. Go to cache {}, "
-            "status 3 -> status 1",
-            j, *cargo_goals[j], *goal);
+            "status 5 -> status 2",
+            j, *cargo_goals[j], *result.goal);
           cache_access++;
           cache_hit++;
           bit_status[j] = 1;
+          goals[j] = result.goal;
         }
         // Cache miss, go to warehouse to get cargo
-        // ==> Status 0
         else {
-          instance_console->debug(
-            "Agent {} assigned with new cargo {}, cache miss. Go to "
-            "warehouse, status 3 -> status 0",
-            j, *cargo_goals[j]);
-          cache_access++;
-          bit_status[j] = 0;
+          CacheAccessResult trash_result = graph.cache->try_cache_garbage_collection(cargo);
+          if (trash_result.result) {
+            // Need to do trash collection ==> Status 0
+            instance_console->debug(
+              "Agent {} assigned with new cargo {}, cache miss. Need to do trash collection. Go to "
+              "clear cache {}, status 5 -> status 0",
+              j, *cargo_goals[j], *trash_result.goal);
+            cache_access++;
+            bit_status[j] = 0;
+          }
+          else {
+            // Directly go to warehouse ==> Status 1
+            instance_console->debug(
+              "Agent {} assigned with new cargo {}, cache miss. Go to "
+              "warehouse, status 5 -> status 1",
+              j, *cargo_goals[j]);
+            cache_access++;
+            bit_status[j] = 1;
+          }
+          goals[j] = trash_result.goal;
         }
-        // update goal
-        goals[j] = goal;
       }
       // Agent has yet not back to unloading port, we check if there is an empty
       // cache block to insert
       else {
-        Vertex* goal = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports);
+        CacheAccessResult result = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports[agent_group[j]]);
         // Check if the cache is available during the period
-        if (!is_port(goal)) {
+        if (result.result) {
           instance_console->debug(
-            "Agent {} status 3 -> status 2, find cache block to insert during the moving, go to cache block {}",
-            j, *cargo_goals[j], *goal);
-          bit_status[j] = 2;
-          goals[j] = goal;
+            "Agent {} status 3 -> status 4, find cache block to insert during the moving, go to cache block {}",
+            j, *cargo_goals[j], *result.goal);
+          bit_status[j] = 4;
+          goals[j] = result.goal;
         }
         // Otherwise, we do nothing if the cache miss
       }
     }
-    else if (bit_status[j] == 4) {
-      // Status 4 finished.
-      // We only check status 4 if it is finished
+    else if (bit_status[j] == 6) {
+      // Status 6 finished.
+      // We only check status 6 if it is finished
       if (vertex_list[step][j] == goals[j]) {
         if (remain_goals > 0) {
           // Update statistics.
@@ -226,31 +255,43 @@ uint Instance::update_on_reaching_goals_with_cache(
         // Generate new cargo goal
         Vertex* cargo = graph.get_next_goal(agent_group[j], parser->look_ahead_num);
         cargo_goals[j] = cargo;
-        Vertex* goal = graph.cache->try_cache_cargo(cargo);
+        CacheAccessResult result = graph.cache->try_cache_cargo(cargo);
 
         // Cache hit, go to cache to get cached cargo
-        // ==> Status 1
-        if (cargo != goal) {
+        // ==> Status 2
+        if (result.result) {
           instance_console->debug(
             "Agent {} assigned with new cargo {}, cache hit. Go to cache {}, "
-            "status 4 -> status 1",
-            j, *cargo_goals[j], *goal);
+            "status 6 -> status 2",
+            j, *cargo_goals[j], *result.goal);
           cache_access++;
           cache_hit++;
-          bit_status[j] = 1;
+          bit_status[j] = 2;
+          goals[j] = result.goal;
         }
         // Cache miss, go to warehouse to get cargo
-        // ==> Status 0
         else {
-          instance_console->debug(
-            "Agent {} assigned with new cargo {}, cache miss. Go to "
-            "warehouse, status 4 -> status 0",
-            j, *cargo_goals[j]);
-          cache_access++;
-          bit_status[j] = 0;
+          CacheAccessResult trash_result = graph.cache->try_cache_garbage_collection(cargo);
+          if (trash_result.result) {
+            // Need to do trash collection ==> Status 0
+            instance_console->debug(
+              "Agent {} assigned with new cargo {}, cache miss. Need to do trash collection. Go to "
+              "clear cache {}, status 6 -> status 0",
+              j, *cargo_goals[j], *trash_result.goal);
+            cache_access++;
+            bit_status[j] = 0;
+          }
+          else {
+            // Directly go to warehouse ==> Status 1
+            instance_console->debug(
+              "Agent {} assigned with new cargo {}, cache miss. Go to "
+              "warehouse, status 6 -> status 1",
+              j, *cargo_goals[j]);
+            cache_access++;
+            bit_status[j] = 1;
+          }
+          goals[j] = trash_result.goal;
         }
-        // update goal
-        goals[j] = goal;
       }
     }
   }

@@ -181,7 +181,7 @@ Graph::Graph(Parser* _parser) : parser(_parser)
         cache->node_coming_cargo.push_back(tmp_cache_node);
         cache->node_cargo_num.emplace_back(tmp_cache_node.size(), 0);
         cache->bit_cache_get_lock.emplace_back(tmp_cache_node.size(), 0);
-        cache->bit_cache_insert_lock.emplace_back(tmp_cache_node.size(), 0);
+        cache->bit_cache_insert_or_clear_lock.emplace_back(tmp_cache_node.size(), 0);
         cache->is_empty.emplace_back(tmp_cache_node.size(), true);
         switch (parser->cache_type) {
         case CacheType::LRU:
