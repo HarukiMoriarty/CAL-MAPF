@@ -165,7 +165,7 @@ CacheAccessResult Cache::try_insert_cache(Vertex* cargo, Vertex* unloading_port)
 
     // First, if cargo has already cached or is coming on the way, we directly go
     // to unloading port, for simplify, we just check cache group here
-    if (_get_cargo_in_cache_position(cargo) != -2 || _is_cargo_in_coming_cache(cargo)) return CacheAccessResult(false, nullptr);
+    if (_get_cargo_in_cache_position(cargo) != -2 || _is_cargo_in_coming_cache(cargo)) return CacheAccessResult(false, unloading_port);
 
     // Second try to find a empty position to insert cargo
     for (uint i = 0; i < is_empty[group].size(); i++) {
