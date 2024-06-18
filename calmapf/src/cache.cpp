@@ -125,9 +125,9 @@ bool Cache::_is_cargo_in_coming_cache(Vertex* cargo) {
 
 bool Cache::_is_garbage_collection(int group) {
     for (uint i = 0; i < is_empty[group].size(); i++) {
-        if (is_empty[group][i]) return true;
+        if (is_empty[group][i]) return false;
     }
-    return false;
+    return true;
 }
 
 bool Cache::look_ahead_cache(Vertex* cargo) {

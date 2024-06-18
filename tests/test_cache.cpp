@@ -96,6 +96,9 @@ TEST(Cache, cache_LRU_single_port_test)
     ASSERT_EQ(true, cache._is_cargo_in_coming_cache(cargo_4));
     ASSERT_EQ(false, cache._is_cargo_in_coming_cache(cargo_5));
 
+    // Test `_is_garbage_collection`
+    ASSERT_EQ(true, cache._is_garbage_collection(0));
+
     // Test `try_cache_cargo(Vertex* cargo)`
     // We will get lock block cache_1 with cargo_1
     // LRU_cnt: (4, 2, 1)
@@ -108,6 +111,12 @@ TEST(Cache, cache_LRU_single_port_test)
     ASSERT_EQ(CacheAccessResult(false, unloading_port), cache.try_insert_cache(cargo_1, port_list[0]));
     ASSERT_EQ(CacheAccessResult(false, unloading_port), cache.try_insert_cache(cargo_4, port_list[0]));
     ASSERT_EQ(2, cache._get_cache_evited_policy_index(0));
+
+    // Test `try_cache_garbage_collection`
+    ASSERT_EQ(CacheAccessResult(true, cache_3), cache.try_cache_garbage_collection(cargo_5));
+
+    // Test `clear_cargo_from_cache`
+    ASSERT_EQ(true, cache.clear_cargo_from_cache(cargo_3, cache_3));
     ASSERT_EQ(CacheAccessResult(true, cache_3), cache.try_insert_cache(cargo_5, port_list[0]));
     ASSERT_EQ(cargo_5, cache.node_coming_cargo[0][2]);
 
@@ -215,6 +224,9 @@ TEST(Cache, cache_FIFO_single_port_test)
     ASSERT_EQ(true, cache._is_cargo_in_coming_cache(cargo_4));
     ASSERT_EQ(false, cache._is_cargo_in_coming_cache(cargo_5));
 
+    // Test `_is_garbage_collection`
+    ASSERT_EQ(true, cache._is_garbage_collection(0));
+
     // Test `try_cache_cargo(Vertex* cargo)`
     // We will get lock block cache_1 with cargo_1
     // FIFO_cnt: (3, 2, 1)
@@ -227,6 +239,13 @@ TEST(Cache, cache_FIFO_single_port_test)
     ASSERT_EQ(CacheAccessResult(false, unloading_port), cache.try_insert_cache(cargo_1, port_list[0]));
     ASSERT_EQ(CacheAccessResult(false, unloading_port), cache.try_insert_cache(cargo_4, port_list[0]));
     ASSERT_EQ(2, cache._get_cache_evited_policy_index(0));
+
+    // Test `try_cache_garbage_collection`
+    ASSERT_EQ(CacheAccessResult(true, cache_3), cache.try_cache_garbage_collection(cargo_5));
+
+    // Test `clear_cargo_from_cache`
+    ASSERT_EQ(true, cache.clear_cargo_from_cache(cargo_3, cache_3));
+
     ASSERT_EQ(CacheAccessResult(true, cache_3), cache.try_insert_cache(cargo_5, port_list[0]));
     ASSERT_EQ(cargo_5, cache.node_coming_cargo[0][2]);
 
