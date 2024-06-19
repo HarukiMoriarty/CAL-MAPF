@@ -113,7 +113,7 @@ TEST(Cache, cache_LRU_single_port_test)
     ASSERT_EQ(2, cache._get_cache_evited_policy_index(0));
 
     // Test `try_cache_garbage_collection`
-    ASSERT_EQ(CacheAccessResult(true, cache_3), cache.try_cache_garbage_collection(cargo_5));
+    ASSERT_EQ(CacheAccessResult(true, cache_3, cargo_3), cache.try_cache_garbage_collection(cargo_5));
 
     // Test `clear_cargo_from_cache`
     ASSERT_EQ(true, cache.clear_cargo_from_cache(cargo_3, cache_3));
@@ -241,7 +241,7 @@ TEST(Cache, cache_FIFO_single_port_test)
     ASSERT_EQ(2, cache._get_cache_evited_policy_index(0));
 
     // Test `try_cache_garbage_collection`
-    ASSERT_EQ(CacheAccessResult(true, cache_3), cache.try_cache_garbage_collection(cargo_5));
+    ASSERT_EQ(CacheAccessResult(true, cache_3, cargo_3), cache.try_cache_garbage_collection(cargo_5));
 
     // Test `clear_cargo_from_cache`
     ASSERT_EQ(true, cache.clear_cargo_from_cache(cargo_3, cache_3));
