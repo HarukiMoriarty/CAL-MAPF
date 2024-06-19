@@ -131,10 +131,11 @@ inline bool is_cache(CacheType cache_type) {
 struct CacheAccessResult {
   bool result;
   Vertex* goal;
+  Vertex* garbage;
 
-  inline CacheAccessResult(bool _result, Vertex* _goal) : result(_result), goal(_goal) {};
+  inline CacheAccessResult(bool _result, Vertex* _goal, Vertex* _garbage = nullptr) : result(_result), goal(_goal), garbage(_garbage) {};
   bool operator==(const CacheAccessResult& other) const {
-    return result == other.result && goal == other.goal;
+    return result == other.result && goal == other.goal && garbage == other.garbage;
   }
 };
 

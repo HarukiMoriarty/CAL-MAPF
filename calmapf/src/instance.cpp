@@ -28,8 +28,8 @@ Instance::Instance(Parser* _parser) : graph(Graph(_parser)), parser(_parser)
     Vertex* goal = graph.get_next_goal(agent_group[j]);
     goals.push_back(goal);
     cargo_goals.push_back(goal);
-    old_goals.push_back(goal);
-    bit_status.push_back(0);      // At the begining, the cache is empty, all agents should at status 0
+    garbages.push_back(goal);
+    bit_status.push_back(1);      // At the begining, the cache is empty, all agents should at status 1
     cargo_cnts.push_back(0);
     if (goals.size() == parser->num_agents) break;
     ++j;
@@ -73,10 +73,10 @@ uint Instance::update_on_reaching_goals_with_cache(
     if (vertex_list[step][j] == goals[j]) {
       // Status 0 finished. ==> Status 3
       if (bit_status[j] == 0) {
-        instance_console->debug("Agent {} status 0 -> status 3, reached cargo {} at cahe block {}, cleared", j, *cargo_goals[j], *goals[j]);
+        instance_console->debug("Agent {} status 0 -> status 3, reached cargo {} at cahe block {}, cleared", j, *garbages[j], *goals[j]);
         bit_status[j] = 3;
-        assert(graph.cache->clear_cargo_from_cache(cargo_goals[j], goals[j]));
-        goals[j] = old_goals[j];
+        assert(graph.cache->clear_cargo_from_cache(garbages[j], goals[j]));
+        goals[j] = garbages[j];
       }
       // Status 2 finished. ==> Status 6
       // Agent has moved to cache cargo target.
@@ -121,7 +121,7 @@ uint Instance::update_on_reaching_goals_with_cache(
             "Agent {} status 1 -> status 5, reach warehouse cargo {}, cache "
             "is full, go back to unloading port",
             j, *cargo_goals[j]);
-          bit_status[j] = 6;
+          bit_status[j] = 5;
         }
         // Find empty cache block, go and insert cargo into cache, -> Status 5
         else {
@@ -129,7 +129,7 @@ uint Instance::update_on_reaching_goals_with_cache(
             "Agent {} status 1 -> status 4, reach warehouse cargo {}, find "
             "cache block to insert, go to cache block {}",
             j, *cargo_goals[j], *result.goal);
-          bit_status[j] = 5;
+          bit_status[j] = 4;
         }
         // Update goals
         goals[j] = result.goal;
@@ -205,6 +205,7 @@ uint Instance::update_on_reaching_goals_with_cache(
               "Agent {} assigned with new cargo {}, cache miss. Need to do trash collection. Go to "
               "clear cache {}, status 5 -> status 0",
               j, *cargo_goals[j], *trash_result.goal);
+            garbages[j] = trash_result.garbage;
             cache_access++;
             bit_status[j] = 0;
           }
@@ -278,6 +279,7 @@ uint Instance::update_on_reaching_goals_with_cache(
               "Agent {} assigned with new cargo {}, cache miss. Need to do trash collection. Go to "
               "clear cache {}, status 6 -> status 0",
               j, *cargo_goals[j], *trash_result.goal);
+            garbages[j] = trash_result.garbage;
             cache_access++;
             bit_status[j] = 0;
           }

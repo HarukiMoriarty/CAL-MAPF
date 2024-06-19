@@ -160,16 +160,18 @@ void Parser::_print() {
 // Unit test only
 Parser::Parser(
     std::string _map_file,
-    CacheType _cache_type) :
+    CacheType _cache_type,
+    uint _num_agents) :
     map_file(_map_file),
-    cache_type(_cache_type)
+    cache_type(_cache_type),
+    num_agents(_num_agents)
 {
     // Set up logger
     if (auto existing_console = spdlog::get("parser"); existing_console != nullptr) parser_console = existing_console;
     else parser_console = spdlog::stderr_color_mt("parser");
     parser_console->set_level(spdlog::level::debug);
 
-    look_ahead_num = 10;
+    look_ahead_num = 1;
     delay_deadline_limit = 10;
 
     num_goals = 100;
@@ -178,8 +180,6 @@ Parser::Parser(
 
     goals_max_k = 20;
     goals_max_m = 100;
-
-    num_agents = 4;
 
     MT = std::mt19937(0);
 

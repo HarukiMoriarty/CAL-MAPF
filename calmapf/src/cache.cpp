@@ -125,8 +125,12 @@ bool Cache::_is_cargo_in_coming_cache(Vertex* cargo) {
 
 bool Cache::_is_garbage_collection(int group) {
     for (uint i = 0; i < is_empty[group].size(); i++) {
-        if (is_empty[group][i]) return false;
+        if (is_empty[group][i]) {
+            cache_console->debug("No need garbage collection");
+            return false;
+        }
     }
+    cache_console->debug("Need garbage collection");
     return true;
 }
 
@@ -197,7 +201,7 @@ CacheAccessResult Cache::try_cache_garbage_collection(Vertex* cargo) {
         if (index != -1) {
             // We lock this position
             bit_cache_insert_or_clear_lock[group][index] += 1;
-            return CacheAccessResult(true, node_id[group][index]);
+            return CacheAccessResult(true, node_id[group][index], node_cargo[group][index]);
         }
 
         return CacheAccessResult(false, cargo);
@@ -220,6 +224,8 @@ bool Cache::update_cargo_into_cache(Vertex* cargo, Vertex* cache_node) {
     node_cargo[cache_node->group][cache_index] = cargo;
     bit_cache_insert_or_clear_lock[cache_node->group][cache_index] -= 1;
     node_cargo_num[cache_node->group][cache_index] = parser->agent_capacity - 1;
+    // Set it as not empty
+    is_empty[cache_node->group][cache_index] = false;
     return true;
 }
 

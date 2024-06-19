@@ -55,5 +55,5 @@ struct Parser {
     void _print();
 
     // Unit test only
-    Parser(std::string _map_file, CacheType _cache_type);
+    Parser(std::string _map_file, CacheType _cache_type, uint _num_agents = 4);
 };
