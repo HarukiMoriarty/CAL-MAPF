@@ -11,7 +11,7 @@ struct Instance {
   Graph graph;                    // graph
   Config starts;                  // initial configuration
   Config goals;                   // goal configuration, can be in warehouse block/cache block
-  Config garbages;               // old goal configuration, used for trash collection
+  Config garbages;                // old goal configuration, used for trash collection
   Config cargo_goals;             // cargo goal configuration
   std::vector<uint> cargo_cnts;   // each cargo cnts, help variable for cargo_steps
   std::vector<uint> cargo_steps;  // each cargo steps 

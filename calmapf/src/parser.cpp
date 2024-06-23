@@ -30,6 +30,7 @@ Parser::Parser(int argc, char* argv[]) {
     program.add_argument("-vof", "--visual-output-file").help("Path to the visual output file. Defaults to './result/vis.yaml'.").default_value(std::string("./result/vis.yaml"));
     program.add_argument("-slf", "--short-log-format").help("Enable short log format. Implicitly true when set.").default_value(false).implicit_value(true);
     program.add_argument("-dl", "--debug-log").help("Enable debug logging. Implicitly true when set.").default_value(false).implicit_value(true);
+    program.add_argument("-op", "--optimize").help("Enable optimization. Enable checking empty space for cache insert while moving.").default_value(false).implicit_value(true);
 
     try {
         program.parse_known_args(argc, argv);
@@ -64,6 +65,8 @@ Parser::Parser(int argc, char* argv[]) {
 
     short_log_format = program.get<bool>("short-log-format");
     debug_log = program.get<bool>("debug-log");
+
+    optimization = program.get<bool>("debug-log");
 
     // Post parse
     _post_parse();
@@ -155,6 +158,7 @@ void Parser::_print() {
     parser_console->info("Visual file:      {}", output_visual_file);
     parser_console->info("Log short:        {}", short_log_format);
     parser_console->info("Debug:            {}", debug_log);
+    parser_console->info("Optimization:     {}", optimization);
 }
 
 // Unit test only

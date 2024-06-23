@@ -88,7 +88,7 @@ uint Instance::update_on_reaching_goals_with_cache(
           j, *cargo_goals[j], *goals[j]);
         bit_status[j] = 6;
         assert(graph.cache->update_cargo_from_cache(cargo_goals[j], goals[j]));
-        // Update goals and steps
+        // Update goals
         goals[j] = graph.unloading_ports[cargo_goals[j]->group];
       }
       // Status 4 finished. ==> Status 6
@@ -101,7 +101,7 @@ uint Instance::update_on_reaching_goals_with_cache(
           j, *cargo_goals[j], *goals[j]);
         bit_status[j] = 6;
         assert(graph.cache->update_cargo_into_cache(cargo_goals[j], goals[j]));
-        // Update goals and steps
+        // Update goals
         goals[j] = graph.unloading_ports[cargo_goals[j]->group];
       }
     }
@@ -115,7 +115,7 @@ uint Instance::update_on_reaching_goals_with_cache(
         // Agent has moved to warehouse cargo target
         CacheAccessResult result = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports[agent_group[j]]);
         // Cache is full, directly get back to unloading port.
-        // ==> Status 6
+        // ==> Status 5
         if (!result.result) {
           instance_console->debug(
             "Agent {} status 1 -> status 5, reach warehouse cargo {}, cache "
@@ -123,7 +123,8 @@ uint Instance::update_on_reaching_goals_with_cache(
             j, *cargo_goals[j]);
           bit_status[j] = 5;
         }
-        // Find empty cache block, go and insert cargo into cache, -> Status 5
+        // Find empty cache block, go and insert cargo into cache.
+        // ==> Status 4
         else {
           instance_console->debug(
             "Agent {} status 1 -> status 4, reach warehouse cargo {}, find "
@@ -224,16 +225,17 @@ uint Instance::update_on_reaching_goals_with_cache(
       // Agent has yet not back to unloading port, we check if there is an empty
       // cache block to insert
       else {
-        CacheAccessResult result = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports[agent_group[j]]);
-        // Check if the cache is available during the period
-        if (result.result) {
-          instance_console->debug(
-            "Agent {} status 3 -> status 4, find cache block to insert during the moving, go to cache block {}",
-            j, *cargo_goals[j], *result.goal);
-          bit_status[j] = 4;
-          goals[j] = result.goal;
+        if (parser->optimization) {
+          CacheAccessResult result = graph.cache->try_insert_cache(cargo_goals[j], graph.unloading_ports[agent_group[j]]);
+          // Check if the cache is available during the period
+          if (result.result) {
+            instance_console->debug(
+              "Agent {} status 3 -> status 4, find cache block to insert during the moving, go to cache block {}",
+              j, *cargo_goals[j], *result.goal);
+            bit_status[j] = 4;
+            goals[j] = result.goal;
+          }
         }
-        // Otherwise, we do nothing if the cache miss
       }
     }
     else if (bit_status[j] == 6) {
