@@ -66,7 +66,7 @@ Parser::Parser(int argc, char* argv[]) {
     short_log_format = program.get<bool>("short-log-format");
     debug_log = program.get<bool>("debug-log");
 
-    optimization = program.get<bool>("debug-log");
+    optimization = program.get<bool>("optimize");
 
     // Post parse
     _post_parse();
