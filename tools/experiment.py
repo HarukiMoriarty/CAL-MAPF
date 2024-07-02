@@ -72,20 +72,20 @@ def run_experiment(params: ExperimentParameters):
 
     cmd_base = [
         "./build/CAL-MAPF",
-        "--map", params["map"],
-        "--cache", params["cache"],
-        "--look-ahead", str(params["look_ahead"]),
-        "--delay-deadline", str(params["delay_deadline"]),
-        "--ngoals", str(params["ngoals"]),
-        "-gg", params["gg"],
-        "--goals-k", str(params["goals_k"]),
-        "--goals-m", str(params["goals_m"]),
-        "--nagents", str(params["nagents"]),
-        "--seed", str(params.get("seed", 0)),
-        "--time_limit_sec", str(params.get("time_limit_sec", 10)),
-        "--output_step_result", params.get("output_step_result", "./result/step_result.txt"),
-        "--output_csv_result", params.get("output_csv_result", "./result/result.csv"),
-        "--output_throughput_result", params.get("output_throughput_result", "./result/throughput.csv")
+        "-mf", params["map"],
+        "-ct", params["cache"],
+        "-lan", str(params["look_ahead"]),
+        "-ddl", str(params["delay_deadline"]),
+        "-ng", str(params["ngoals"]),
+        "-ggs", params["gg"],
+        "-gmk", str(params["goals_k"]),
+        "-gmm", str(params["goals_m"]),
+        "-na", str(params["nagents"]),
+        "-rs", str(params.get("seed", 0)),
+        "-tls", str(params.get("time_limit_sec", 10)),
+        "-osrf", params.get("output_step_result", "./result/step_result.txt"),
+        "-ocf", params.get("output_csv_result", "./result/result.csv"),
+        "-otf", params.get("output_throughput_result", "./result/throughput.csv")
     ]
     if params.get("log_short", False):
         cmd_base.append("--log_short")
