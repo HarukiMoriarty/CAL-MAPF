@@ -202,6 +202,7 @@ Parser::Parser(
     num_goals = 100;
 
     goals_gen_strategy = GoalGenerationType::MK;
+    strategy_num_goals.push_back(100);
 
     goals_max_k = 20;
     goals_max_m = 100;
