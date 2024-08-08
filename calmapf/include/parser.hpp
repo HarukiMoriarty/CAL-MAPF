@@ -18,6 +18,7 @@ struct Parser {
 
     // Goal settings
     uint num_goals;
+    std::vector<uint> strategy_num_goals;
 
     std::string goals_gen_strategy_input;
     GoalGenerationType goals_gen_strategy;
@@ -25,6 +26,7 @@ struct Parser {
     uint goals_max_k;
     uint goals_max_m;
     std::string real_dist_file_path;
+    std::string hybrid_percent;
 
     // Agent settings
     uint num_agents;

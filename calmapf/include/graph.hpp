@@ -34,7 +34,7 @@ struct Graph {
   GraphType get_graph_type(std::string type);
   int size() const;                       // the number of vertices, |V|
   Vertex* random_target_vertex(int group);
-  void fill_goals_list(GoalGenerationType goal_generation_type, std::string goal_real_file, int group, uint goals_m, uint goals_k, uint ngoals);
+  void _fill_goals_list(int group);
   Vertex* get_next_goal(int group, int look_ahead = 1);
 };
 

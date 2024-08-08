@@ -185,4 +185,5 @@ enum class GoalGenerationType {
   MK,
   Zhang,
   Real,
+  Hybrid,
 };

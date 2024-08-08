@@ -16,10 +16,11 @@ Parser::Parser(int argc, char* argv[]) {
     program.add_argument("-lan", "--look-ahead-num").help("Number for look-ahead logic. Defaults to 1.").default_value(std::string("1"));
     program.add_argument("-ddl", "--delay-deadline-limit").help("Delay deadline limit for task assignment. Defaults to 1.").default_value(std::string("1"));
     program.add_argument("-ng", "--num-goals").help("Number of goals to achieve.").required();
-    program.add_argument("-ggs", "--goals-gen-strategy").help("Strategy for goals generation: MK, Zhang, Real.").required();
+    program.add_argument("-ggs", "--goals-gen-strategy").help("Strategy for goals generation: MK, Zhang, Real, Hybrid.").required();
     program.add_argument("-gmk", "--goals-max-k").help("Maximum 'k' different goals in 'm' segments of all goals. Defaults to 0.").default_value(std::string("0"));
     program.add_argument("-gmm", "--goals-max-m").help("Maximum 'k' different goals in 'm' segments of all goals. Defaults to 100.").default_value(std::string("100"));
     program.add_argument("-rdfp", "--real-dist-file-path").help("Path to the real distribution data file. Defaults to './data/order_data.csv'.").default_value(std::string("./data/order_data.csv"));
+    program.add_argument("-hp", "--hybrid-percent").help("The percentage that a certain number of distribution goals appear (e.g. \"90:5:5\"). If not set, every strategy has the same percentage").default_value(std::string("1:1:1"));
     program.add_argument("-na", "--num-agents").help("Number of agents to use.").required();
     program.add_argument("-ac", "--agent-capacity").help("Capacity of agents.").default_value(std::string("100"));
     program.add_argument("-rs", "--random-seed").help("Seed for random number generation. Defaults to 0.").default_value(std::string("0"));
@@ -51,6 +52,7 @@ Parser::Parser(int argc, char* argv[]) {
     goals_max_k = std::stoi(program.get<std::string>("goals-max-k"));
     goals_max_m = std::stoi(program.get<std::string>("goals-max-m"));
     real_dist_file_path = program.get<std::string>("real-dist-file-path");
+    hybrid_percent = program.get<std::string>("hybrid-percent");
 
     num_agents = std::stoi(program.get<std::string>("num-agents"));
     agent_capacity = std::stoi(program.get<std::string>("agent-capacity"));
@@ -75,7 +77,6 @@ Parser::Parser(int argc, char* argv[]) {
     // Print
     _print();
 }
-
 void Parser::_post_parse() {
     // Set log level
     if (debug_log) parser_console->set_level(spdlog::level::debug);
@@ -106,12 +107,34 @@ void Parser::_post_parse() {
             exit(1);
         }
         goals_gen_strategy = GoalGenerationType::MK;
+        strategy_num_goals.push_back(num_goals);
+        strategy_num_goals.push_back(0);
+        strategy_num_goals.push_back(0);
     }
     else if (goals_gen_strategy_input == "Zhang") {
         goals_gen_strategy = GoalGenerationType::Zhang;
+        strategy_num_goals.push_back(0);
+        strategy_num_goals.push_back(num_goals);
+        strategy_num_goals.push_back(0);
     }
     else if (goals_gen_strategy_input == "Real") {
         goals_gen_strategy = GoalGenerationType::Real;
+        strategy_num_goals.push_back(0);
+        strategy_num_goals.push_back(0);
+        strategy_num_goals.push_back(num_goals);
+    }
+    else if (goals_gen_strategy_input == "Hybrid") {
+        goals_gen_strategy = GoalGenerationType::Hybrid;
+        std::vector<int> percentages;
+        std::stringstream ss(hybrid_percent);
+        std::string item;
+        while (std::getline(ss, item, ':')) {
+            percentages.push_back(std::stoi(item));
+        }
+        int sum = std::accumulate(percentages.begin(), percentages.end(), 0);
+        for (int percentage : percentages) {
+            strategy_num_goals.push_back(num_goals * percentage / sum);
+        }
     }
     else {
         parser_console->error("Invalid goals_generation strategy specified.");
@@ -148,6 +171,7 @@ void Parser::_print() {
     else if (goals_gen_strategy == GoalGenerationType::Real) {
         parser_console->info("Real disy file:   {}", real_dist_file_path);
     }
+    parser_console->info("Strategy percent: {}", strategy_num_goals);
     parser_console->info("Seed:             {}", random_seed);
     parser_console->info("Time limit (sec): {}", time_limit_sec);
     parser_console->info("Step file:        {}", output_step_file);

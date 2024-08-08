@@ -407,7 +407,7 @@ Graph::Graph(Parser* _parser) : parser(_parser)
   graph_console->info("Generating goals...");
 
   for (int i = 0; i < group; i++) {
-    fill_goals_list(parser->goals_gen_strategy, parser->real_dist_file_path, i, parser->goals_max_m, parser->goals_max_k, parser->num_goals);
+    _fill_goals_list(i);
   }
 }
 
@@ -423,73 +423,69 @@ Vertex* Graph::random_target_vertex(int group) {
   return *it;
 }
 
-void Graph::fill_goals_list(GoalGenerationType goal_generation_type, std::string goal_real_file, int group_index, uint goals_m, uint goals_k, uint ngoals) {
-  if (goal_generation_type == GoalGenerationType::MK) {
-    std::deque<Vertex*> sliding_window;
-    std::unordered_map<Vertex*, int> goal_count;
-    std::unordered_set<Vertex*> diff_goals;
-    uint goals_generated = 0;
+void Graph::_fill_goals_list(int group_index) {
+  for (uint i = 0; i < parser->strategy_num_goals.size(); i++) {
+    if (i == 0 && parser->strategy_num_goals[i] != 0) {
+      std::deque<Vertex*> sliding_window;
+      std::unordered_map<Vertex*, int> goal_count;
+      std::unordered_set<Vertex*> diff_goals;
 
-    while (goals_queue[group_index].size() < (uint(ngoals / group) + 1)) {
-      if (goals_generated % 1000 == 0) {
-        graph_console->info("Generated {:5}/{:5} goals.", goals_generated, ngoals);
-      }
+      while (goals_queue[group_index].size() < (uint(parser->strategy_num_goals[0] / group) + 1)) {
+        Vertex* selected_goal = random_target_vertex(group_index);
 
-      Vertex* selected_goal = random_target_vertex(group_index);
-
-      if (sliding_window.size() == goals_m) {
-        Vertex* removed_goal = sliding_window.front();
-        sliding_window.pop_front();
-        goal_count[removed_goal]--;
-        if (goal_count[removed_goal] == 0) {
-          goal_count.erase(removed_goal);
-          diff_goals.erase(removed_goal);
+        if (sliding_window.size() == parser->goals_max_m) {
+          Vertex* removed_goal = sliding_window.front();
+          sliding_window.pop_front();
+          goal_count[removed_goal]--;
+          if (goal_count[removed_goal] == 0) {
+            goal_count.erase(removed_goal);
+            diff_goals.erase(removed_goal);
+          }
         }
+
+        if (diff_goals.size() == parser->goals_max_k) {
+          int index = get_random_int(&parser->MT, 0, parser->goals_max_k - 1);
+          auto it = diff_goals.begin();
+          std::advance(it, index);
+          selected_goal = *it;
+        }
+
+        // Update status
+        sliding_window.push_back(selected_goal);
+        goal_count[selected_goal]++;
+        diff_goals.insert(selected_goal);
+        goals_queue[group_index].push_back(selected_goal);
+        goals_delay[group_index].push_back(0);
       }
-
-      if (diff_goals.size() == goals_k) {
-        int index = get_random_int(&parser->MT, 0, goals_k - 1);
-        auto it = diff_goals.begin();
-        std::advance(it, index);
-        selected_goal = *it;
+    }
+    // The generation method that is based on "Zhang, Y., 2016. Correlated storage assignment strategy to reduce travel distance in order picking. IFAC-PapersOnLine, 49(2), pp.30-35."
+    // A summary of the method.
+    // 10% of items have a sum of 70% probability to be selected (A-class). 20% of items with 20% probability (B-class), 70% of items with 10% (C-class)
+    // Assumptions:
+    // 1. The probability for each item decreases as the item index increases.
+    // 2. The last item in A-class has the same probability as the first item in B-class.
+    // 3. The last item in B-class has the same probability as the first item in C-class.
+    // 4. The sum of the probabilities for all A-class items,B-class items, and C-class items are 70%, 20%, and 10%, correspondingly.
+    else if (i == 1 && parser->strategy_num_goals[i] != 0) {
+      std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group_index].size());
+      boost::random::discrete_distribution<> dist(item_prob);
+      for (uint i = 0; i < (parser->strategy_num_goals[1] / uint(group) + 1); i++) {
+        goals_queue[group_index].push_back(cargo_vertices[group_index][dist(parser->MT)]);
+        goals_delay[group_index].push_back(0);
       }
-
-      // Update status
-      sliding_window.push_back(selected_goal);
-      goal_count[selected_goal]++;
-      diff_goals.insert(selected_goal);
-      goals_queue[group_index].push_back(selected_goal);
-      goals_delay[group_index].push_back(0);
-      goals_generated++;
     }
-  }
-  // The generation method that is based on "Zhang, Y., 2016. Correlated storage assignment strategy to reduce travel distance in order picking. IFAC-PapersOnLine, 49(2), pp.30-35."
-  // A summary of the method.
-  // 10% of items have a sum of 70% probability to be selected (A-class). 20% of items with 20% probability (B-class), 70% of items with 10% (C-class)
-  // Assumptions:
-  // 1. The probability for each item decreases as the item index increases.
-  // 2. The last item in A-class has the same probability as the first item in B-class.
-  // 3. The last item in B-class has the same probability as the first item in C-class.
-  // 4. The sum of the probabilities for all A-class items,B-class items, and C-class items are 70%, 20%, and 10%, correspondingly.
-  else if (goal_generation_type == GoalGenerationType::Zhang) {
-    std::vector<double> item_prob = calculate_probabilities(cargo_vertices[group_index].size());
-    boost::random::discrete_distribution<> dist(item_prob);
-    for (uint i = 0; i < (ngoals / uint(group) + 1); i++) {
-      goals_queue[group_index].push_back(cargo_vertices[group_index][dist(parser->MT)]);
-      goals_delay[group_index].push_back(0);
-    }
-  }
-  else if (goal_generation_type == GoalGenerationType::Real) {
-    std::vector<float> prob_v = compute_frequency_from_file(goal_real_file);
-    prob_v.resize(cargo_vertices[group_index].size());
-    boost::random::discrete_distribution<> dist(prob_v);
-    for (uint i = 0; i < (ngoals / uint(group) + 1); i++) {
-      goals_queue[group_index].push_back(cargo_vertices[group_index][dist(parser->MT)]);
-      goals_delay[group_index].push_back(0);
+    else if (i == 2 && parser->strategy_num_goals[i] != 0) {
+      std::vector<float> prob_v = compute_frequency_from_file(parser->real_dist_file_path);
+      prob_v.resize(cargo_vertices[group_index].size());
+      boost::random::discrete_distribution<> dist(prob_v);
+      for (uint i = 0; i < (parser->strategy_num_goals[2] / uint(group) + 1); i++) {
+        goals_queue[group_index].push_back(cargo_vertices[group_index][dist(parser->MT)]);
+        goals_delay[group_index].push_back(0);
+      }
     }
   }
 
-  graph_console->debug("Group {} goals {}", group, goals_queue[group_index].size());
+  graph_console->info("Group {} goals {}", group, goals_queue[group_index].size());
 }
 
 Vertex* Graph::get_next_goal(int group, int look_ahead) {
