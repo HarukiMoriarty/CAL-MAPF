@@ -22,8 +22,7 @@ struct Instance {
   // 2 -> cache hit, going to cache to get cargo (add read lock)
   // 3 -> cache cleared, going to warehouse to bring back cargo
   // 4 -> warehouse get cargo, find empty block, going back to insert cache (get write lock)
-  // 5 -> warehouse get cargo, cannot find empty block, going back to unloading port
-  // 6 -> cache get cargo from cache, going back to unloading port
+  // 5 -> warehouse get cargo, cannot find empty block / cache get cargo / cache insert cargo, going back to unloading port
   std::vector<uint> bit_status;
 
   std::vector<int> agent_group;   // agents group

@@ -47,18 +47,18 @@ TEST(Instance, state_machine_test)
 
   goal = instance.goals[0];
 
-  // Status 4 -> Status 6
+  // Status 4 -> Status 5
   step.clear();
   vertex_list.clear();
   step.push_back(goal);
   vertex_list.push_back(step);
 
   ASSERT_EQ(0, instance.update_on_reaching_goals_with_cache(vertex_list, 100, cache_access, cache_hit));
-  ASSERT_EQ(6, instance.bit_status[0]);
+  ASSERT_EQ(5, instance.bit_status[0]);
 
   goal = instance.goals[0];
 
-  // Status 6 -> Status 0
+  // Status 5 -> Status 0
   step.clear();
   vertex_list.clear();
   step.push_back(goal);
@@ -102,18 +102,18 @@ TEST(Instance, state_machine_test)
 
   goal = instance.goals[0];
 
-  // Status 4 -> Status 6
+  // Status 4 -> Status 5
   step.clear();
   vertex_list.clear();
   step.push_back(goal);
   vertex_list.push_back(step);
 
   ASSERT_EQ(0, instance.update_on_reaching_goals_with_cache(vertex_list, 100, cache_access, cache_hit));
-  ASSERT_EQ(6, instance.bit_status[0]);
+  ASSERT_EQ(5, instance.bit_status[0]);
 
   goal = instance.goals[0];
 
-  // Status 6 -> Status 2
+  // Status 5 -> Status 2
   step.clear();
   vertex_list.clear();
   step.push_back(goal);
@@ -124,12 +124,12 @@ TEST(Instance, state_machine_test)
 
   goal = instance.goals[0];
 
-  // Status 2 -> Status 6
+  // Status 2 -> Status 5
   step.clear();
   vertex_list.clear();
   step.push_back(goal);
   vertex_list.push_back(step);
 
   ASSERT_EQ(0, instance.update_on_reaching_goals_with_cache(vertex_list, 100, cache_access, cache_hit));
-  ASSERT_EQ(6, instance.bit_status[0]);
+  ASSERT_EQ(5, instance.bit_status[0]);
 }
