@@ -49,9 +49,6 @@ struct Parser {
     // Logger
     std::shared_ptr<spdlog::logger> parser_console;
 
-    // Optimize
-    bool optimization;
-
     Parser(int argc, char* argv[]);
     void _post_parse();
     void _check();

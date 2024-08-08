@@ -66,8 +66,6 @@ Parser::Parser(int argc, char* argv[]) {
     short_log_format = program.get<bool>("short-log-format");
     debug_log = program.get<bool>("debug-log");
 
-    optimization = program.get<bool>("optimize");
-
     // Post parse
     _post_parse();
 
@@ -158,7 +156,6 @@ void Parser::_print() {
     parser_console->info("Visual file:      {}", output_visual_file);
     parser_console->info("Log short:        {}", short_log_format);
     parser_console->info("Debug:            {}", debug_log);
-    parser_console->info("Optimization:     {}", optimization);
 }
 
 // Unit test only
