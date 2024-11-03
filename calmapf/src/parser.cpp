@@ -12,7 +12,7 @@ Parser::Parser(int argc, char* argv[]) {
     // arguments definition
     argparse::ArgumentParser program("CAL-MAPF", "0.1.0");
     program.add_argument("-mf", "--map-file").help("Path to the map file.").required();
-    program.add_argument("-ct", "--cache-type").help("Type of cache to use: NONE, LRU, FIFO, RANDOM. Defaults to NONE.").default_value(std::string("NONE"));
+    program.add_argument("-ct", "--cache-type").help("Type of cache to use: NONE, LRU, FIFO, RANDOM, SIEVE. Defaults to NONE.").default_value(std::string("NONE"));
     program.add_argument("-lan", "--look-ahead-num").help("Number for look-ahead logic. Defaults to 1.").default_value(std::string("1"));
     program.add_argument("-ddl", "--delay-deadline-limit").help("Delay deadline limit for task assignment. Defaults to 1.").default_value(std::string("1"));
     program.add_argument("-ng", "--num-goals").help("Number of goals to achieve.").required();
@@ -94,6 +94,9 @@ void Parser::_post_parse() {
     }
     else if (cache_type_input == "RANDOM") {
         cache_type = CacheType::RANDOM;
+    }
+    else if (cache_type_input == "SIEVE") {
+        cache_type = CacheType::SIEVE;
     }
     else {
         parser_console->error("Invalid cache type!");

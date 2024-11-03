@@ -1,6 +1,23 @@
 #include <calmapf.hpp>
 #include "gtest/gtest.h"
 
+TEST(IndexQueue, cache_index_queue_test)
+{
+    IndexQueue index_queue;
+    size_t hand = 0;
+
+    index_queue.enqueue(1);
+    ASSERT_EQ(index_queue.at(hand), 1);
+    hand++;
+
+    index_queue.enqueue(2);
+    ASSERT_EQ(index_queue.at(hand), 2);
+
+    index_queue.remove(hand);
+    if (hand >= index_queue.size()) hand = 0;
+    ASSERT_EQ(index_queue.at(hand), 1);
+}
+
 TEST(Cache, cache_LRU_single_port_test)
 {
     Parser cache_LRU_single_port_test_parser = Parser("", CacheType::LRU);

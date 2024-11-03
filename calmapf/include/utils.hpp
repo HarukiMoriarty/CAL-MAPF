@@ -120,7 +120,8 @@ enum class CacheType {
   NONE,
   LRU,
   FIFO,
-  RANDOM
+  RANDOM,
+  SIEVE
 };
 
 inline bool is_cache(CacheType cache_type) {

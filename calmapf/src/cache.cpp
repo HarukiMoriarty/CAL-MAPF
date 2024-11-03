@@ -25,6 +25,13 @@ bool Cache::_update_cache_evited_policy_statistics(const uint group, const uint 
             FIFO[group][index] = FIFO_cnt[group];
         }
         break;
+    case CacheType::SIEVE:
+        if (fifo_option) {
+            SIEVE[group].enqueue(index);
+        }
+        else {
+            SIEVE_ref_bit[group][index] = true;
+        }
     case CacheType::RANDOM:
         break;
     default:
@@ -63,6 +70,24 @@ int Cache::_get_cache_evited_policy_index(const uint group) {
             }
         }
         return min_index;
+    case CacheType::SIEVE: {
+        uint max_find_times = 2 * SIEVE[group].size();
+        while (max_find_times > 0) {
+            uint SIEVE_index = SIEVE[group].at(SIEVE_hand[group]);
+            if (bit_cache_insert_or_clear_lock[group][SIEVE_index] == 0 && bit_cache_get_lock[group][SIEVE_index] == 0 && !SIEVE_ref_bit[group][SIEVE_index]) {
+                SIEVE[group].remove(SIEVE_hand[group]);
+                SIEVE_hand[group] = (SIEVE_hand[group]) % SIEVE[group].size();
+                return SIEVE_index;
+            }
+            else {
+                SIEVE_ref_bit[group][SIEVE_index] = false;
+                SIEVE_hand[group] = (SIEVE_hand[group]) % SIEVE[group].size();
+
+            }
+            max_find_times--;
+        }
+        return -1;
+    }
     case CacheType::RANDOM:
         for (uint i = 0; i < node_id[group].size(); i++) {
             // If it's not blocked
@@ -90,7 +115,6 @@ int Cache::_get_cache_block_in_cache_position(Vertex* block) {
             index = i;
             break;
         }
-
     }
     // Cache goals must in cache
     assert(index != -1);

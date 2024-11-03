@@ -186,12 +186,16 @@ Graph::Graph(Parser* _parser) : parser(_parser)
         switch (parser->cache_type) {
         case CacheType::LRU:
           cache->LRU.emplace_back(tmp_cache_node.size(), 0);
-          cache->LRU_cnt.resize(tmp_cache_node.size(), 0);
+          cache->LRU_cnt.push_back(0);
           break;
         case CacheType::FIFO:
           cache->FIFO.emplace_back(tmp_cache_node.size(), 0);
-          cache->FIFO_cnt.resize(tmp_cache_node.size(), 0);
+          cache->FIFO_cnt.push_back(0);
           break;
+        case CacheType::SIEVE:
+          cache->SIEVE.push_back(IndexQueue());
+          cache->SIEVE_ref_bit.emplace_back(tmp_cache_node.size(), false);
+          cache->SIEVE_hand.push_back(0);
         case CacheType::RANDOM:
           break;
         default:

@@ -6,6 +6,43 @@
 #include "utils.hpp"
 #include "parser.hpp"
 #include <cassert>
+#include <list>
+
+struct IndexQueue {
+    std::list<uint> data;
+
+    void enqueue(uint value) {
+        data.push_back(value);
+    }
+
+    void remove(size_t index) {
+        auto it = getIteratorAt(index);
+        data.erase(it);
+    }
+
+    uint at(size_t index) {
+        auto it = getIteratorAt(index);
+        return *it;
+    }
+
+    bool isEmpty() const {
+        return data.empty();
+    }
+
+    // Get the size of the queue
+    size_t size() const {
+        return data.size();
+    }
+private:
+    std::list<uint>::iterator getIteratorAt(size_t index) {
+        if (index >= data.size()) {
+            throw std::out_of_range("Index out of range");
+        }
+        auto it = data.begin();
+        std::advance(it, index);
+        return it;
+    }
+};
 
 struct Cache {
     std::vector<Vertices> node_cargo;
@@ -25,6 +62,10 @@ struct Cache {
     std::vector<uint> FIFO_cnt;
 
     // Random paras (no paras)
+    // SIEVE paras
+    std::vector<IndexQueue> SIEVE;
+    std::vector<std::vector<bool>> SIEVE_ref_bit;
+    std::vector<size_t> SIEVE_hand;
 
     // Parser
     Parser* parser;
