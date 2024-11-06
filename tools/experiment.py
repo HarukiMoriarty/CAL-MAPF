@@ -54,7 +54,7 @@ def check_and_create_csv(output_csv_path: str):
         csv_path.parent.mkdir(parents=True, exist_ok=True)
         # Create the file and write the header
         with open(csv_path, 'w') as csv_file:
-            csv_file.write("map_name,cache,look_ahead,delay_deadline,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k,cache_hit_rate,makespan,p0_steps,p50_steps,p99steps\n")
+            csv_file.write("map_name,cache,look_ahead,delay_deadline,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k,cache_hit_rate,makespan,throughput,p0_steps,p50_steps,p99steps\n")
 
 def check_and_create_throughput(output_throughput_path: str):
     # Convert string path to Path object for easier handling

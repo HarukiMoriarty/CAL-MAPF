@@ -304,10 +304,10 @@ void Log::make_throughput_log(uint index, uint* start_cnt, uint make_span)
   }
 }
 
-void Log::make_csv_log(double cache_hit_rate, uint make_span, std::vector<uint>* step_percentiles, bool failure)
+void Log::make_csv_log(double cache_hit_rate, uint make_span, std::vector<uint>* step_percentiles, uint ngoals, bool failure)
 {
   if (!failure) {
-    csv_output_handler << cache_hit_rate << "," << make_span << "," << (*step_percentiles)[0] << "," << (*step_percentiles)[2] << "," << (*step_percentiles)[6] << std::endl;
+    csv_output_handler << cache_hit_rate << "," << make_span << "," << (double)ngoals / (double)make_span << "," << (*step_percentiles)[0] << "," << (*step_percentiles)[2] << "," << (*step_percentiles)[6] << std::endl;
   }
   else {
     csv_output_handler << "fail to solve" << std::endl;

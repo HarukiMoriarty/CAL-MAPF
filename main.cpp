@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 
     // Failure
     if (solution.empty()) {
-      log.make_csv_log(.0, 0, nullptr, true);
+      log.make_csv_log(.0, 0, nullptr, parser.num_goals, true);
       console->error("failed to solve");
       return 1;
     }
@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
   }
 
   log.make_life_long_log(ins, parser.output_visual_file);
-  log.make_csv_log(total_cache_rate, makespan, &step_percentiles, false);
+  log.make_csv_log(total_cache_rate, makespan, &step_percentiles, parser.num_goals, false);
 
   return 0;
 }
