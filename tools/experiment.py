@@ -1,114 +1,104 @@
-import argparse
-import itertools
-import logging
-import subprocess
 import pandas as pd
-import yaml
+import numpy as np
 
-from pathlib import Path
-from typing import TypedDict, List
-
-BASE_PATH = Path(__file__).absolute().parent
-
-LOG = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format="%(message)s")
-
-class ExperimentParameters(TypedDict):
-    map: List[str]
-    cache: List[str]
-    look_ahead: List[str]
-    delay_deadline: List[str]
-    ngoals: List[int]
-    gg: List[str]
-    goals_k: List[int]
-    goals_m: List[int]
-    nagents: List[int]
-    seed: int  # Assuming a single value for simplicity, modify as needed.
-    time_limit_sec: int  # Assuming a single value for simplicity, modify as needed.
-    output_step_result: str
-    output_csv_result: str
-    output_throughput_result: str
-    log_short: bool
-    debug: bool
-
-def load_experiment(exp_name: str):
-    exp_path = BASE_PATH / "experiment" / f"{exp_name}.yaml"
-    if not exp_path.exists():
-        LOG.error(f"Experiment file {exp_path} not found.")
-        return None
-
-    with open(exp_path) as f:
-        return yaml.safe_load(f)
-
-def generate_combinations(params: ExperimentParameters):
-    keys = params.keys()
-    values = (params[key] if isinstance(params[key], list) else [params[key]] for key in keys)
-    for combination in itertools.product(*values):
-        yield dict(zip(keys, combination))
-
-def check_and_create_csv(output_csv_path: str):
-    # Convert string path to Path object for easier handling
-    csv_path = Path(output_csv_path)
-    if not csv_path.exists():
-        # Ensure the directory exists
-        csv_path.parent.mkdir(parents=True, exist_ok=True)
-        # Create the file and write the header
-        with open(csv_path, 'w') as csv_file:
-            csv_file.write("map_name,cache,look_ahead,delay_deadline,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k,cache_hit_rate,makespan,throughput,p0_steps,p50_steps,p99steps\n")
-
-def check_and_create_throughput(output_throughput_path: str):
-    # Convert string path to Path object for easier handling
-    throughput_path = Path(output_throughput_path)
-    if not throughput_path.exists():
-        # Ensure the directory exists
-        throughput_path.parent.mkdir(parents=True, exist_ok=True)
-        # Create the file and write the header
-        with open(throughput_path, 'w') as csv_file:
-            csv_file.write("map_name,cache,look_ahead,delay_deadline,goal_generation_type,ngoals,nagents,seed,verbose,time_limit_sec,goals_m,goals_k\n")
-
-def run_experiment(params: ExperimentParameters):
-    check_and_create_csv(params.get("output_csv_result", "./result/result.csv"))
-    check_and_create_throughput(params.get("output_throughput_result", "./result/throughput.csv"))
-
-    cmd_base = [
-        "./build/CAL-MAPF",
-        "-mf", params["map"],
-        "-ct", params["cache"],
-        "-lan", str(params["look_ahead"]),
-        "-ddl", str(params["delay_deadline"]),
-        "-ng", str(params["ngoals"]),
-        "-ggs", params["gg"],
-        "-gmk", str(params["goals_k"]),
-        "-gmm", str(params["goals_m"]),
-        "-na", str(params["nagents"]),
-        "-rs", str(params.get("seed", 0)),
-        "-tls", str(params.get("time_limit_sec", 10)),
-        "-osrf", params.get("output_step_result", "./result/step_result.txt"),
-        "-ocf", params.get("output_csv_result", "./result/result.csv"),
-        "-otf", params.get("output_throughput_result", "./result/throughput.csv")
+def analyze_cache_overhead(csv_path):
+    """
+    Analyze cache overhead from experimental data.
+    
+    Args:
+        csv_path (str): Path to the CSV file containing experiment results
+    
+    Returns:
+        dict: Dictionary containing P0, P50, P99 overhead percentages
+    """
+    # Read the CSV file
+    df = pd.read_csv(csv_path)
+    
+    # Define the columns that constitute an experiment setting
+    setting_columns = [
+        'map_name', 'goal_generation_type', 'ngoals', 'nagents'
     ]
-    if params.get("log_short", False):
-        cmd_base.append("--log_short")
-    if params.get("debug", False):
-        cmd_base.append("--debug")
-
-    LOG.info(f"Executing: {' '.join(cmd_base)}")
-    subprocess.run(cmd_base, check=True)
+    
+    # Function to calculate overhead percentage
+    def calculate_overhead(group):
+        # Get baseline (no cache) elapsed time
+        baseline = group[group['cache'] == 'NONE']
+        if baseline.empty:
+            return None
+        baseline_time = baseline['elapsed_time'].iloc[0]
+        
+        # Get cached times (excluding NONE)
+        cached_runs = group[group['cache'] != 'NONE']
+        if cached_runs.empty:
+            return None
+            
+        # Calculate average cached time across all cache types
+        avg_cached_time = cached_runs['elapsed_time'].mean()
+        
+        # Calculate overhead percentage
+        overhead_pct = ((avg_cached_time - baseline_time) / baseline_time) * 100
+        return overhead_pct
+    
+    # Group by experiment settings
+    grouped = df.groupby(setting_columns + ['nagents'])
+    overheads = []
+    
+    for _, group in grouped:
+        print(group)
+        overhead = calculate_overhead(group)
+        if overhead is not None:
+            overheads.append(overhead)
+    
+    if not overheads:
+        return None
+        
+    # Calculate percentiles
+    results = {
+        'P0': np.percentile(overheads, 0),
+        'P50': np.percentile(overheads, 50),
+        'P99': np.percentile(overheads, 99)
+    }
+    
+    # Also calculate per number of agents
+    nagents_groups = df.groupby('nagents')
+    per_agent_results = {}
+    
+    for nagents, group in nagents_groups:
+        agent_overheads = []
+        for _, setting_group in group.groupby(setting_columns):
+            overhead = calculate_overhead(setting_group)
+            if overhead is not None:
+                agent_overheads.append(overhead)
+        
+        if agent_overheads:
+            per_agent_results[nagents] = {
+                'P0': np.percentile(agent_overheads, 0),
+                'P50': np.percentile(agent_overheads, 50),
+                'P99': np.percentile(agent_overheads, 99)
+            }
+    
+    return results, per_agent_results
 
 def main():
-    parser = argparse.ArgumentParser(description="Run lacam experiments with different parameters.")
-    parser.add_argument("experiment", help="Experiment name to run.")
-    args = parser.parse_args()
-
-    exp_params = load_experiment(args.experiment)
-    if exp_params is None:
-        return
-
-    for combination in generate_combinations(exp_params):
-        try:
-            run_experiment(combination)
-        except subprocess.CalledProcessError as e:
-            LOG.error(f"Experiment failed with error: {e}")
+    csv_path = './result/result_Real.csv'  # Update with your CSV file path
+    results = analyze_cache_overhead(csv_path)
+    
+    if results:
+        overall_results, per_agent_results = results
+        
+        print("\nOverall Cache Overhead Analysis:")
+        print(f"P0  (minimum) overhead: {overall_results['P0']:.2f}%")
+        print(f"P50 (median)  overhead: {overall_results['P50']:.2f}%")
+        print(f"P99           overhead: {overall_results['P99']:.2f}%")
+        
+        print("\nOverhead by Number of Agents:")
+        for nagents, stats in sorted(per_agent_results.items()):
+            print(f"\nAgents: {nagents}")
+            print(f"  P0  (minimum): {stats['P0']:.2f}%")
+            print(f"  P50 (median):  {stats['P50']:.2f}%")
+            print(f"  P99          : {stats['P99']:.2f}%")
+    else:
+        print("Could not calculate overhead. Make sure the data contains both cached and non-cached (NONE) experiments.")
 
 if __name__ == "__main__":
     main()

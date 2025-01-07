@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
   Log log(&parser);
   // Timer
   auto timer = std::chrono::steady_clock::now();
+  auto start = std::chrono::steady_clock::now();
 
   // solving
   uint nagents_with_new_goals = 0;
@@ -62,7 +63,7 @@ int main(int argc, char* argv[])
 
     // Failure
     if (solution.empty()) {
-      log.make_csv_log(.0, 0, nullptr, parser.num_goals, true);
+      log.make_csv_log(.0, 0, nullptr, parser.num_goals, elapsed_time, true);
       console->error("failed to solve");
       return 1;
     }
@@ -104,8 +105,10 @@ int main(int argc, char* argv[])
     console->info("Total Goals Reached: {:5}   |   Makespan: {:5}   |   P0 Steps: {:5}    |   P50 Steps: {:5}   |   P99 Steps: {:5}", parser.num_goals, makespan, step_percentiles[0], step_percentiles[2], step_percentiles[6]);
   }
 
+  auto end_time = std::chrono::steady_clock::now();
+  auto running_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start).count();
   log.make_life_long_log(ins, parser.output_visual_file);
-  log.make_csv_log(total_cache_rate, makespan, &step_percentiles, parser.num_goals, false);
+  log.make_csv_log(total_cache_rate, makespan, &step_percentiles, parser.num_goals, running_time, false);
 
   return 0;
 }

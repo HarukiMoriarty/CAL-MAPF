@@ -64,7 +64,8 @@ Planner::Planner(const Instance* _ins, const Deadline* _deadline, std::mt19937* 
   A(Agents(N, nullptr)),
   occupied_now(Agents(V_size, nullptr)),
   occupied_next(Agents(V_size, nullptr))
-{}
+{
+}
 
 Solution Planner::solve()
 {
@@ -146,7 +147,8 @@ Solution Planner::solve()
   //   solution.empty() ? (OPEN.empty() ? "no solution" : "failed")
   //   : "solution found",
   //   "\tloop_itr:", loop_cnt, "\texplored:", CLOSED.size());
-  // // memory management
+
+  // memory management
   for (auto a : A) delete a;
   for (auto M : GC) delete M;
   for (auto p : CLOSED) delete p.second;
